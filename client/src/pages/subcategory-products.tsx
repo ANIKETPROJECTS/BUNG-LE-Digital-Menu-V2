@@ -283,7 +283,7 @@ export default function SubcategoryProducts() {
               variant="ghost"
               size="icon"
               onClick={() => setLocation(
-                categoryId === "mocktails" || (categoryId === "food" && subcategoryId === "desserts")
+                categoryId === "mocktails" || categoryId === "desserts"
                   ? "/menu"
                   : `/menu/${categoryId}`
               )}

@@ -1189,7 +1189,7 @@ export default function MenuLanding() {
       return;
     }
     if (categoryId === "desserts") {
-      setLocation(`/menu/food/desserts`);
+      setLocation(`/menu/desserts/desserts`);
       return;
     }
     setLocation(`/menu/${categoryId}`);
@@ -1471,10 +1471,7 @@ export default function MenuLanding() {
         )}
 
         <div className="grid grid-cols-2 gap-3">
-          {[
-            ...menuCategories,
-            { id: "desserts", title: "Desserts", image: "", order: 99, visible: true, subcategories: [] } as MenuCategory,
-          ].map((category, index) => {
+          {menuCategories.map((category, index) => {
               const label = category.title;
               const imgSrc = failedImages.has(category.id)
                 ? fallbackImg
