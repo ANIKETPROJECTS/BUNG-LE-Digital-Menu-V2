@@ -1,0 +1,14 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "ovq0RaByASGvkvUoyjHU2"
+uri = "file://admin-dashboard-prompt.md"
+type = "text"
+title = "Admin Dashboard — Full Build Prompt (Updated)"
+
+[[outputs]]
+id = "-86p6VVyEDc5U8P2Vztln"
+uri = "file://investor-demo-dashboard-prompt.md"
+type = "text"
+title = "Investor Demo Dashboard — Build Prompt"

@@ -1,0 +1,368 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@400;500;600;700;800;900&family=Cinzel+Decorative:wght@400;600;700;900&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(20, 14.3%, 4.1%);
+  --muted: hsl(60, 4.8%, 95.9%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(20, 14.3%, 4.1%);
+  --border: hsl(20, 5.9%, 90%);
+  --input: hsl(20, 5.9%, 90%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(60, 4.8%, 95.9%);
+  --secondary-foreground: hsl(24, 9.8%, 10%);
+  --accent: hsl(60, 4.8%, 95.9%);
+  --accent-foreground: hsl(24, 9.8%, 10%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 0.5rem;
+  
+  /* Orange, Black, White theme colors for Mings Chinese Cuisine */
+  --mings-orange: hsl(17, 100%, 55%);
+  --mings-orange-light: hsl(17, 100%, 65%);
+  --mings-orange-dark: hsl(17, 100%, 45%);
+  --mings-black: hsl(0, 0%, 8%);
+  --mings-dark-gray: hsl(0, 0%, 15%);
+  --mings-white: hsl(0, 0%, 100%);
+  --mings-cream: hsl(45, 20%, 95%);
+  --mings-gray: hsl(0, 0%, 50%);
+  --mings-light-gray: hsl(0, 0%, 85%);
+  --mings-emerald: hsl(142, 76%, 36%);
+  --mings-red: hsl(0, 74%, 42%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    text-transform: uppercase;
+  }
+
+  .font-playfair {
+    font-family: 'Playfair Display', serif;
+  }
+
+  .font-cinzel {
+    font-family: 'Cinzel Decorative', serif;
+  }
+
+  .font-cormorant {
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  .mings-orange-gradient {
+    background: linear-gradient(135deg, var(--mings-orange) 0%, var(--mings-orange-light) 100%);
+  }
+
+  .mings-orange-dark-gradient {
+    background: linear-gradient(135deg, var(--mings-orange-dark) 0%, var(--mings-orange) 100%);
+  }
+
+  .mings-card {
+    background: var(--mings-white);
+    border: 2px solid var(--mings-light-gray);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .mings-card-orange {
+    background: var(--mings-orange);
+    border: 2px solid var(--mings-black);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .dish-card {
+    transition: all 0.3s ease;
+    background: var(--mings-white);
+    border: 1px solid var(--mings-light-gray);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .dish-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-color: var(--mings-orange);
+  }
+
+  .floating-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--mings-orange);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: float 6s ease-in-out infinite;
+    opacity: 0.7;
+  }
+
+  @keyframes float {
+    0%, 100% { 
+      transform: translateY(0px); 
+      opacity: 0.7;
+    }
+    50% { 
+      transform: translateY(-20px); 
+      opacity: 1;
+    }
+  }
+
+  .elegant-shadow {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .elegant-shadow-hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Date Picker Dropdown Styling */
+  .rdp-dropdown {
+    @apply bg-white text-black border border-[#B8986A] rounded px-1 py-0.5 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-[#B8986A];
+  }
+  
+  .rdp-caption_dropdowns {
+    @apply flex items-center gap-1;
+  }
+  
+  .rdp-dropdown_month, .rdp-dropdown_year {
+    @apply cursor-pointer hover:bg-gray-100 transition-colors;
+  }
+
+  .mings-bg-gradient {
+    background: linear-gradient(135deg, var(--mings-orange) 0%, var(--mings-orange-light) 100%);
+  }
+
+  .mings-card-glass {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--mings-light-gray);
+  }
+
+  .dish-card {
+    background: white;
+    border: 1px solid var(--mings-light-gray);
+  }
+
+  .dish-card:hover {
+    border-color: var(--mings-orange);
+  }
+}
+
+/* Enhanced responsive design for mobile cards */
+@media (max-width: 768px) {
+  .mings-card {
+    margin: 0 1rem;
+    padding: 2rem 1.5rem !important;
+  }
+  
+  /* Mobile grid styling for restaurant details */
+  .grid.md\\:grid-cols-3 {
+    grid-template-columns: 1fr;
+    gap: 1.5rem !important;
+    padding: 0 1rem;
+  }
+  
+  .grid.md\\:grid-cols-3 > div {
+    margin: 0 !important;
+    border-radius: 1rem !important;
+    padding: 1.5rem !important;
+    border: 2px solid var(--mings-black) !important;
+    background: var(--mings-white) !important;
+  }
+  
+  /* Ensure proper border radius on mobile */
+  .rounded-2xl {
+    border-radius: 1rem !important;
+  }
+  
+  .rounded-3xl {
+    border-radius: 1.5rem !important;
+  }
+  
+  /* Typography adjustments for mobile */
+  .text-8xl {
+    font-size: 4.5rem !important;
+  }
+  
+  .text-5xl {
+    font-size: 2.5rem !important;
+  }
+  
+  .text-lg {
+    font-size: 1.125rem !important;
+    line-height: 1.6 !important;
+  }
+  
+  /* Ensure proper container padding on mobile */
+  .min-h-screen .p-4 {
+    padding: 1rem !important;
+  }
+  
+  .max-w-5xl {
+    max-width: 100% !important;
+    padding: 0 1rem;
+  }
+}
+
+/* ── Barrelborn theme variables ────────────────────────────── */
+/* Default = dark (current look). Light overrides applied below. */
+:root {
+  --bb-bg:        #d98540;
+  --bb-card:      #030101;
+  --bb-card-alt:  #030101;
+  --bb-gold:      #E49B1D;
+  --bb-gold-2:    #C4722A;
+  --bb-text:      #DCD4C8;
+  --bb-text-dim:  rgba(220,212,200,0.55);
+  --bb-border:    rgba(228,155,29,0.25);
+  --bb-header:    #030101;
+  --bb-search-bg: rgba(255,255,255,0.06);
+  --bb-search-br: rgba(228,155,29,0.3);
+  --bb-input-text:#E8D8B4;
+}
+
+[data-theme="light"] {
+  --bb-bg:        #FFFFFF;
+  --bb-card:      #FFFFFF;
+  --bb-card-alt:  #FFFFFF;
+  --bb-gold:      #8B6200;
+  --bb-gold-2:    #A87800;
+  --bb-text:      #1a1a1a;
+  --bb-text-dim:  rgba(0,0,0,0.5);
+  --bb-border:    rgba(0,0,0,0.1);
+  --bb-header:    #FFFFFF;
+  --bb-search-bg: rgba(0,0,0,0.04);
+  --bb-search-br: rgba(139,98,0,0.25);
+  --bb-input-text:#1a1a1a;
+}
+
+[data-theme="dark"] {
+  --bb-bg:        #000000;
+  --bb-card:      #0a0a0a;
+  --bb-card-alt:  #111111;
+  --bb-gold:      #E49B1D;
+  --bb-gold-2:    #C4722A;
+  --bb-text:      #DCD4C8;
+  --bb-text-dim:  rgba(220,212,200,0.55);
+  --bb-border:    rgba(228,155,29,0.25);
+  --bb-header:    #000000;
+  --bb-search-bg: rgba(255,255,255,0.06);
+  --bb-search-br: rgba(228,155,29,0.3);
+  --bb-input-text:#E8D8B4;
+}
+
+[data-theme="light"],
+[data-theme="light"] body,
+[data-theme="light"] #root {
+  background-color: #FFFFFF;
+  background-image: none;
+}
+
+[data-theme="dark"],
+[data-theme="dark"] body,
+[data-theme="dark"] #root {
+  background-color: #000000;
+  background-image: none;
+}
+
+.bb-bg {
+  background-color: var(--bb-bg);
+  background-image: url('/bg-pattern-new.png');
+  background-repeat: repeat;
+  background-size: 1024px auto;
+}
+
+[data-theme="light"] .bb-bg {
+  background-image: none;
+  background-color: #FFFFFF;
+}
+
+[data-theme="dark"] .bb-bg {
+  background-image: none;
+  background-color: #000000;
+}
+
+/* Welcome page — button (same style in both themes) */
+.btn-explore {
+  background: #030101;
+  border: 5px solid #c4722a;
+  color: #E49B1D;
+  font-size: 18px;
+}
+
+/* Customer details form inputs — white placeholder */
+.customer-form-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Welcome page — social card (same style in both themes) */
+.social-card {
+  background: #030101;
+  border-radius: 20px;
+  border: 5px solid #c4722a;
+  padding: 20px 16px 16px;
+}
+.social-card-label {
+  color: #E49B1D;
+}
+.social-card-divider {
+  background: #E49B1D !important;
+}
+
+.bb-header {
+  background-color: #FFFFFF;
+  background-image: none;
+}
+
+[data-theme="light"] .bb-header {
+  background-color: #FFFFFF;
+}
+/* ── end theme variables ────────────────────────────────────── */
+
+@keyframes coupon-marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.coupon-track {
+  animation: coupon-marquee 28s linear infinite;
+}
+
+.coupon-track:hover {
+  animation-play-state: paused;
+}

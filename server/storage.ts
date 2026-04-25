@@ -1,0 +1,941 @@
+import { MongoClient, Db, Collection, ObjectId } from "mongodb";
+import { type User, type InsertUser, type MenuItem, type InsertMenuItem, type CartItem, type InsertCartItem, type Customer, type InsertCustomer, type SocialLinks, type WelcomeScreenUI, type Coupon, type CarouselImage, type Logo, type MenuCategory, type MenuSubCategory, type Reservation, type InsertReservation, type PaymentDetails, type CallWaiter, type RestaurantInfo, type SmartPicksCategory } from "@shared/schema";
+
+type UpdateMenuItemFlags = {
+  todaysSpecial?: boolean;
+  chefSpecial?: boolean;
+  isAvailable?: boolean;
+};
+
+export interface IStorage {
+  getUser(id: string): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+
+  getMenuItems(): Promise<MenuItem[]>;
+  getMenuItemsByCategory(category: string): Promise<MenuItem[]>;
+  getMenuItem(id: string): Promise<MenuItem | undefined>;
+  getCategories(): string[];
+  addMenuItem(item: InsertMenuItem): Promise<MenuItem>;
+  updateMenuItemFlags(id: string, category: string, flags: UpdateMenuItemFlags): Promise<MenuItem | undefined>;
+
+  getCartItems(): Promise<CartItem[]>;
+  addToCart(item: InsertCartItem): Promise<CartItem>;
+  removeFromCart(id: string): Promise<void>;
+  clearCart(): Promise<void>;
+  
+  // Customer operations
+  getCustomers(): Promise<Customer[]>;
+  getCustomerByPhone(phone: string): Promise<Customer | undefined>;
+  createOrUpdateCustomer(customer: InsertCustomer): Promise<{ customer: Customer; isNew: boolean }>;
+
+  getSocialLinks(): Promise<SocialLinks | null>;
+  updateSocialLinks(data: Partial<Omit<SocialLinks, '_id'>>): Promise<SocialLinks | null>;
+  getWelcomeScreenUI(): Promise<WelcomeScreenUI | null>;
+  getCoupons(): Promise<Coupon[]>;
+  getCarouselImages(): Promise<CarouselImage[]>;
+  getLogo(): Promise<Logo | null>;
+  getMenuCategories(): Promise<MenuCategory[]>;
+
+  clearDatabase(): Promise<void>;
+  fixVegNonVegClassification(): Promise<{ updated: number; details: string[] }>;
+
+  createReservation(reservation: InsertReservation): Promise<Reservation>;
+  getReservations(): Promise<Reservation[]>;
+  getPaymentDetails(): Promise<PaymentDetails | null>;
+
+  getCallWaiterStatus(): Promise<CallWaiter | null>;
+  setCallWaiterStatus(called: boolean): Promise<CallWaiter>;
+
+  getRestaurantInfo(): Promise<RestaurantInfo | null>;
+  updateRestaurantInfo(data: Partial<Omit<RestaurantInfo, '_id'>>): Promise<RestaurantInfo | null>;
+
+  getSmartPicksCategories(): Promise<SmartPicksCategory[]>;
+  updateSmartPicksCategoryVisibility(key: string, isVisible: boolean): Promise<SmartPicksCategory | null>;
+}
+
+export class MongoStorage implements IStorage {
+  private client: MongoClient;
+  private db: Db;
+  private customersDb: Db;
+  private socialsDb: Db;
+  private welcomeScreenDb: Db;
+  private menuPageDb: Db;
+  private hamburgerDb: Db;
+  private categoryCollections: Map<string, Collection<MenuItem>>;
+  private cartItemsCollection: Collection<CartItem>;
+  private usersCollection: Collection<User>;
+  private customersCollection: Collection<Customer>;
+  private linksCollection: Collection<SocialLinks>;
+  private welcomeScreenUiCollection: Collection<WelcomeScreenUI>;
+  private couponsCollection: Collection<Coupon>;
+  private carouselCollection: Collection<CarouselImage>;
+  private logoCollection: Collection<Logo>;
+  private categoriesCollection: Collection<MenuCategory>;
+  private reservationCollection: Collection<Reservation>;
+  private paymentDetailsCollection: Collection<PaymentDetails>;
+  private callWaiterCollection: Collection<CallWaiter>;
+  private restaurantInfoCollection: Collection<RestaurantInfo>;
+  private smartpicksDb: Db;
+  private smartpicksCategorieCollection: Collection<SmartPicksCategory>;
+  private restaurantId: ObjectId;
+
+  private readonly categories = [
+    // FOOD
+    "soups", "khane-peene", "continental-veg", "continental-non-veg",
+    "pasta", "pizza", "tandoor-veg", "tandoor-non-veg",
+    "oriental-starter-veg", "oriental-starter-non-veg", "jalpari-special",
+    "sabzi-tarkari", "murg-e-khaas", "gosht-e-khaas", "agri-style",
+    "rotis", "oriental-curries", "fried-rice-noodles", "basmati-ki-khushbu",
+    "dals", "salad-raita", "desserts",
+    // BAR
+    "cocktails", "shots", "beer", "alcopops", "wine", "liquor", "beverages",
+    "whisky", "single-malt", "bourbon-irish", "vodka", "gin", "rum", "brandy",
+    // MOCKTAILS
+    "mocktails-drinks"
+  ];
+
+  constructor(connectionString: string) {
+    this.client = new MongoClient(connectionString);
+    this.db = this.client.db("barrelborn");
+    this.customersDb = this.client.db("customersdb");
+    this.socialsDb = this.client.db("socialsandcontact");
+    this.welcomeScreenDb = this.client.db("welcomescreen");
+    this.menuPageDb = this.client.db("menupage");
+    this.hamburgerDb = this.client.db("hamburger");
+    this.categoryCollections = new Map();
+
+    this.categories.forEach(category => {
+      this.categoryCollections.set(category, this.db.collection(category));
+    });
+
+    this.cartItemsCollection = this.db.collection("cartitems");
+    this.usersCollection = this.db.collection("users");
+    this.customersCollection = this.customersDb.collection("customers");
+    this.linksCollection = this.socialsDb.collection<SocialLinks>("link");
+    this.welcomeScreenUiCollection = this.welcomeScreenDb.collection<WelcomeScreenUI>("welcomescreenui");
+    this.couponsCollection = this.menuPageDb.collection<Coupon>("coupons");
+    this.carouselCollection = this.menuPageDb.collection<CarouselImage>("carousel");
+    this.logoCollection = this.menuPageDb.collection<Logo>("logo");
+    this.categoriesCollection = this.menuPageDb.collection<MenuCategory>("categories");
+    this.reservationCollection = this.hamburgerDb.collection<Reservation>("reservation");
+    this.paymentDetailsCollection = this.hamburgerDb.collection<PaymentDetails>("paymentdetails");
+    this.callWaiterCollection = this.menuPageDb.collection<CallWaiter>("callwaiter");
+    this.restaurantInfoCollection = this.hamburgerDb.collection<RestaurantInfo>("restaurantinfo");
+    this.smartpicksDb = this.client.db("smartpicks");
+    this.smartpicksCategorieCollection = this.smartpicksDb.collection<SmartPicksCategory>("smartpickscategorie");
+    this.restaurantId = new ObjectId("6874cff2a880250859286de6");
+  }
+
+  async connect() {
+    await this.client.connect();
+    
+    // Ensure all defined collections exist
+    const existingCollections = await this.db.listCollections().toArray();
+    const existingNames = existingCollections.map(c => c.name);
+    
+    for (const category of this.categories) {
+      if (!existingNames.includes(category)) {
+        console.log(`[Storage] Creating missing collection: ${category}`);
+        await this.db.createCollection(category);
+      }
+    }
+
+    const customerCollections = await this.customersDb.listCollections().toArray();
+    const customerExistingNames = customerCollections.map(c => c.name);
+
+    if (!customerExistingNames.includes("customers")) {
+      console.log(`[Storage] Creating missing collection: customers in customersdb`);
+      await this.customersDb.createCollection("customers");
+    }
+
+    // Ensure socialsandcontact.link collection exists and has a seed document
+    const socialsCollections = await this.socialsDb.listCollections().toArray();
+    const socialsExistingNames = socialsCollections.map(c => c.name);
+
+    if (!socialsExistingNames.includes("link")) {
+      console.log(`[Storage] Creating missing collection: link in socialsandcontact`);
+      await this.socialsDb.createCollection("link");
+    }
+
+    const existingLinks = await this.linksCollection.findOne({});
+    if (!existingLinks) {
+      console.log(`[Storage] Seeding default social links document`);
+      await this.linksCollection.insertOne({
+        instagram: "https://www.instagram.com/tarangkitchenandbar/",
+        facebook: "https://facebook.com",
+        youtube: "https://youtube.com",
+        googleReview: "https://g.page/r/CbKAeLOlg005EBM/review",
+        locate: "https://maps.app.goo.gl/C7K6BijrGrvWTXyBA",
+        call: "tel:+918278251111",
+        whatsapp: "https://wa.me/918278251111",
+        email: "mailto:tarang.hospitality@gmail.com",
+        website: "https://www.atdigitalmenu.com",
+      } as any);
+    }
+
+    // Ensure welcomescreen.welcomescreenui collection exists with seed document
+    const welcomeCollections = await this.welcomeScreenDb.listCollections().toArray();
+    const welcomeExistingNames = welcomeCollections.map(c => c.name);
+
+    if (!welcomeExistingNames.includes("welcomescreenui")) {
+      console.log(`[Storage] Creating missing collection: welcomescreenui in welcomescreen`);
+      await this.welcomeScreenDb.createCollection("welcomescreenui");
+    }
+
+    const existingWelcomeUI = await this.welcomeScreenUiCollection.findOne({});
+    if (!existingWelcomeUI) {
+      console.log(`[Storage] Seeding default welcomescreenui document`);
+      await this.welcomeScreenUiCollection.insertOne({
+        logoUrl: "",
+        buttonText: "EXPLORE OUR MENU",
+      } as any);
+    }
+
+    // Ensure menupage.coupons collection exists and is seeded
+    const menuPageCollections = await this.menuPageDb.listCollections().toArray();
+    const menuPageExistingNames = menuPageCollections.map(c => c.name);
+
+    if (!menuPageExistingNames.includes("coupons")) {
+      console.log(`[Storage] Creating missing collection: coupons in menupage`);
+      await this.menuPageDb.createCollection("coupons");
+    }
+
+    // Ensure menupage.carousel collection exists and is seeded
+    if (!menuPageExistingNames.includes("carousel")) {
+      console.log(`[Storage] Creating missing collection: carousel in menupage`);
+      await this.menuPageDb.createCollection("carousel");
+    }
+
+    const existingCarousel = await this.carouselCollection.countDocuments();
+    if (existingCarousel === 0) {
+      console.log(`[Storage] Seeding default carousel images into menupage.carousel`);
+      await this.carouselCollection.insertMany([
+        { url: "/carousel/promo1.jpg", alt: "Restaurant Interior", order: 1, visible: true },
+        { url: "/carousel/promo2.jpg", alt: "Bar & Dining Area", order: 2, visible: true },
+        { url: "/carousel/promo3.jpg", alt: "Modern Ambiance", order: 3, visible: true },
+        { url: "/carousel/promo4.jpg", alt: "Contemporary Dining", order: 4, visible: true },
+        { url: "/carousel/promo5.jpg", alt: "Elegant Seating", order: 5, visible: true },
+      ] as any[]);
+    } else {
+      // Migrate existing documents to add visible: true if they don't have the field
+      const migrated = await this.carouselCollection.updateMany(
+        { visible: { $exists: false } },
+        { $set: { visible: true } }
+      );
+      if (migrated.modifiedCount > 0) {
+        console.log(`[Storage] Migrated ${migrated.modifiedCount} carousel documents to add visible: true`);
+      }
+    }
+
+    // Ensure menupage.logo collection exists and is seeded
+    if (!menuPageExistingNames.includes("logo")) {
+      console.log(`[Storage] Creating missing collection: logo in menupage`);
+      await this.menuPageDb.createCollection("logo");
+    }
+
+    const existingLogo = await this.logoCollection.countDocuments();
+    if (existingLogo === 0) {
+      console.log(`[Storage] Seeding default logo into menupage.logo`);
+      await this.logoCollection.insertOne({
+        url: "https://atdigitalmenu.com/wp-content/uploads/2025/01/AT-Digital-Menu-logo-transparent.png",
+      } as any);
+    }
+
+    const existingCoupons = await this.couponsCollection.countDocuments();
+    if (existingCoupons === 0) {
+      console.log(`[Storage] Seeding default coupons into menupage.coupons`);
+      await this.couponsCollection.insertMany([
+        {
+          code: "BARREL20",
+          title: "20% OFF",
+          subtitle: "On your total bill",
+          description: "Valid on dine-in orders above ₹1000",
+          validity: "Valid till 31 Mar 2026",
+          tag: "LIMITED",
+          show: true,
+        },
+        {
+          code: "HAPPYHOUR",
+          title: "₹100 Off",
+          subtitle: "On all cocktails",
+          description: "Every weekday between 5 PM – 8 PM",
+          validity: "Valid till 30 Apr 2026",
+          tag: "HAPPY HOUR",
+          show: true,
+        },
+        {
+          code: "CRAFT15",
+          title: "15% OFF",
+          subtitle: "On craft beers",
+          description: "All draught & craft beer on tap",
+          validity: "Valid till 15 Apr 2026",
+          tag: "BEER LOVERS",
+          show: true,
+        },
+        {
+          code: "WELCOME50",
+          title: "₹50 OFF",
+          subtitle: "First visit discount",
+          description: "On your very first order at Barrelborn",
+          validity: "Single use only",
+          tag: "NEW GUEST",
+          show: true,
+        },
+        {
+          code: "WEEKEND25",
+          title: "25% OFF",
+          subtitle: "Weekend special",
+          description: "On food orders — Saturday & Sunday",
+          validity: "Every weekend",
+          tag: "WEEKEND",
+          show: true,
+        },
+      ] as any[]);
+    }
+
+    // Ensure menupage.categories collection exists and is seeded with defaults
+    if (!menuPageExistingNames.includes("categories")) {
+      console.log(`[Storage] Creating missing collection: categories in menupage`);
+      await this.menuPageDb.createCollection("categories");
+    }
+
+    const existingCategories = await this.categoriesCollection.countDocuments();
+
+    if (existingCategories === 0) {
+      console.log(`[Storage] Seeding default categories into menupage.categories`);
+      await this.categoriesCollection.insertMany([
+        {
+          id: "food",
+          title: "FOOD",
+          image: "",
+          order: 1,
+          subcategories: [
+            { id: "nibbles", title: "Nibbles", image: "", subcategories: [] },
+            { id: "soups", title: "Soups", image: "", subcategories: [] },
+            { id: "titbits", title: "Titbits", image: "", subcategories: [] },
+            { id: "salads", title: "Salads", image: "", subcategories: [] },
+            { id: "mangalorean-style", title: "Mangalorean Style", image: "", subcategories: [] },
+            { id: "wok", title: "Wok", image: "", subcategories: [] },
+            { id: "charcoal", title: "Charcoal", image: "", subcategories: [] },
+            { id: "continental", title: "Continental", image: "", subcategories: [] },
+            { id: "pasta", title: "Pasta", image: "", subcategories: [] },
+            { id: "artisan-pizzas", title: "Artisan Pizzas", image: "", subcategories: [] },
+            { id: "mini-burger-sliders", title: "Mini Burger Sliders", image: "", subcategories: [] },
+            { id: "entree", title: "Entree (Main Course)", image: "", subcategories: [] },
+            { id: "bao-dimsum", title: "Bao & Dim Sum", image: "", subcategories: [] },
+            { id: "indian-mains-curries", title: "Indian Mains - Curries", image: "", subcategories: [] },
+            { id: "biryanis-rice", title: "Biryanis & Rice", image: "", subcategories: [] },
+            { id: "dals", title: "Dals", image: "", subcategories: [] },
+            { id: "breads", title: "Breads", image: "", subcategories: [] },
+            { id: "asian-mains", title: "Asian Mains", image: "", subcategories: [] },
+            { id: "rice-with-curry---thai-asian-bowls", title: "Rice with Curry - Thai & Asian Bowls", image: "", subcategories: [] },
+            { id: "rice-noodles", title: "Rice & Noodles", image: "", subcategories: [] },
+            { id: "sizzlers", title: "Sizzlers", image: "", subcategories: [] },
+          ],
+        },
+        {
+          id: "crafted-beer",
+          title: "CRAFT BEERS",
+          image: "",
+          order: 2,
+          subcategories: [
+            { id: "craft-beers-on-tap", title: "Craft Beers On Tap", image: "", subcategories: [] },
+            { id: "draught-beer", title: "Draught Beer", image: "", subcategories: [] },
+            { id: "pint-beers", title: "Pint Beers", image: "", subcategories: [] },
+          ],
+        },
+        {
+          id: "cocktails",
+          title: "COCKTAILS",
+          image: "",
+          order: 3,
+          subcategories: [
+            { id: "classic-cocktails", title: "Classic Cocktails", image: "", subcategories: [] },
+            { id: "signature-cocktails", title: "Signature Cocktails", image: "", subcategories: [] },
+            { id: "wine-cocktails", title: "Wine Cocktails", image: "", subcategories: [] },
+            { id: "sangria", title: "Sangria", image: "", subcategories: [] },
+            { id: "beer-cocktail", title: "Beer Cocktail", image: "", subcategories: [] },
+            { id: "signature-shots", title: "Signature Shots", image: "", subcategories: [] },
+          ],
+        },
+        {
+          id: "bar",
+          title: "BAR",
+          image: "",
+          order: 4,
+          subcategories: [
+            { id: "blended-whisky", title: "Blended Whisky", image: "", subcategories: [] },
+            { id: "blended-scotch-whisky", title: "Blended Scotch Whisky", image: "", subcategories: [] },
+            { id: "american-irish-whiskey", title: "American & Irish Whiskey", image: "", subcategories: [] },
+            { id: "single-malt-whisky", title: "Single Malt Whisky", image: "", subcategories: [] },
+            { id: "vodka", title: "Vodka", image: "", subcategories: [] },
+            { id: "gin", title: "Gin", image: "", subcategories: [] },
+            { id: "rum", title: "Rum", image: "", subcategories: [] },
+            { id: "tequila", title: "Tequila", image: "", subcategories: [] },
+            { id: "cognac-brandy", title: "Cognac & Brandy", image: "", subcategories: [] },
+            { id: "liqueurs", title: "Liqueurs", image: "", subcategories: [] },
+            {
+              id: "wine",
+              title: "Wine",
+              image: "",
+              subcategories: [
+                { id: "sparkling-wine", title: "Sparkling Wine", image: "", subcategories: [] },
+                { id: "white-wines", title: "White Wines", image: "", subcategories: [] },
+                { id: "rose-wines", title: "Rosé Wines", image: "", subcategories: [] },
+                { id: "red-wines", title: "Red Wines", image: "", subcategories: [] },
+                { id: "dessert-wines", title: "Dessert Wines", image: "", subcategories: [] },
+                { id: "port-wine", title: "Port Wine", image: "", subcategories: [] },
+              ],
+            },
+          ],
+        },
+        {
+          id: "desserts",
+          title: "DESSERTS",
+          image: "",
+          order: 5,
+          subcategories: [
+            { id: "desserts", title: "Desserts", image: "", subcategories: [] },
+          ],
+        },
+        {
+          id: "mocktails",
+          title: "MOCKTAILS",
+          image: "",
+          order: 6,
+          subcategories: [
+            { id: "signature-mocktails", title: "Signature Mocktails", image: "", subcategories: [] },
+            { id: "soft-beverages", title: "Soft Beverages", image: "", subcategories: [] },
+          ],
+        },
+      ] as any[]);
+    }
+
+    // Migrate all categories and their subcategories to add visible: true where missing
+    {
+      const allCats = await this.categoriesCollection.find({}).toArray();
+      let migrated = 0;
+      for (const cat of allCats) {
+        const updates: any = {};
+        if (cat.visible === undefined || cat.visible === null) {
+          updates.visible = true;
+        }
+        const { changed: subsChanged, result: updatedSubcats } = this.addVisibilityToSubcats(cat.subcategories || []);
+        if (subsChanged) {
+          updates.subcategories = updatedSubcats;
+        }
+        if (Object.keys(updates).length > 0) {
+          await this.categoriesCollection.updateOne({ _id: cat._id }, { $set: updates });
+          migrated++;
+        }
+      }
+      if (migrated > 0) {
+        console.log(`[Storage] Migrated ${migrated} category documents to add visible: true`);
+      }
+    }
+
+    // Ensure menupage.callwaiter collection exists and is seeded
+    if (!menuPageExistingNames.includes("callwaiter")) {
+      console.log(`[Storage] Creating missing collection: callwaiter in menupage`);
+      await this.menuPageDb.createCollection("callwaiter");
+    }
+
+    const existingCallWaiter = await this.callWaiterCollection.findOne({});
+    if (!existingCallWaiter) {
+      console.log(`[Storage] Seeding default callwaiter document into menupage.callwaiter`);
+      await this.callWaiterCollection.insertOne({ called: false } as any);
+    }
+
+    // Ensure hamburger.reservation and hamburger.paymentdetails collections exist
+    const hamburgerCollections = await this.hamburgerDb.listCollections().toArray();
+    const hamburgerExistingNames = hamburgerCollections.map(c => c.name);
+
+    if (!hamburgerExistingNames.includes("reservation")) {
+      console.log(`[Storage] Creating missing collection: reservation in hamburger`);
+      await this.hamburgerDb.createCollection("reservation");
+    }
+
+    if (!hamburgerExistingNames.includes("paymentdetails")) {
+      console.log(`[Storage] Creating missing collection: paymentdetails in hamburger`);
+      await this.hamburgerDb.createCollection("paymentdetails");
+    }
+
+    const existingPaymentDetails = await this.paymentDetailsCollection.findOne({});
+    if (!existingPaymentDetails) {
+      console.log(`[Storage] Seeding default payment details into hamburger.paymentdetails`);
+      await this.paymentDetailsCollection.insertOne({ upiId: "atdigitalmenu@upi" } as any);
+    }
+
+    // Ensure hamburger.restaurantinfo collection exists and is seeded
+    if (!hamburgerExistingNames.includes("restaurantinfo")) {
+      console.log(`[Storage] Creating missing collection: restaurantinfo in hamburger`);
+      await this.hamburgerDb.createCollection("restaurantinfo");
+    }
+
+    const existingRestaurantInfo = await this.restaurantInfoCollection.findOne({});
+    if (!existingRestaurantInfo) {
+      console.log(`[Storage] Seeding default restaurantinfo into hamburger.restaurantinfo`);
+      await this.restaurantInfoCollection.insertOne({
+        location:  { name: "Tarang Kitchen & Bar", subtext: "Open in Google Maps",     show: true, linkKey: "locate"    },
+        contact:   { name: "+91 77383 10238", subtext: "For Reservations and Orders", show: true, linkKey: "call"    },
+        hours:     { name: "11.30 AM - 11.30 PM", subtext: "Open All Days",            show: true                      },
+        instagram: { name: "@tarangkitchenandbar", subtext: "Follow Us for Updates",   show: true, linkKey: "instagram" },
+        facebook:  { name: "Tarang Kitchen and Bar", subtext: "Follow on Facebook",    show: true, linkKey: "facebook"  },
+        youtube:   { name: "Tarang Kitchen & Bar", subtext: "Watch on YouTube",        show: true, linkKey: "youtube"   },
+        whatsapp:  { name: "+91 77383 10238", subtext: "Chat on WhatsApp",             show: true, linkKey: "whatsapp"  },
+      } as any);
+    } else if (existingRestaurantInfo.location && typeof (existingRestaurantInfo.location as any).show === 'undefined') {
+      console.log(`[Storage] Migrating restaurantinfo to add show/linkKey fields`);
+      await this.restaurantInfoCollection.updateOne(
+        { _id: existingRestaurantInfo._id },
+        {
+          $set: {
+            "location.show": true,  "location.linkKey": "locate",
+            "contact.show": true,   "contact.linkKey": "call",
+            "hours.show": true,
+            "instagram.show": true, "instagram.linkKey": "instagram",
+            "facebook.show": true,  "facebook.linkKey": "facebook",
+            "youtube.show": true,   "youtube.linkKey": "youtube",
+            "whatsapp.show": true,  "whatsapp.linkKey": "whatsapp",
+          }
+        }
+      );
+    }
+
+    // Ensure smartpicks.smartpickscategorie collection exists and is seeded
+    const smartpicksCollections = await this.smartpicksDb.listCollections().toArray();
+    const smartpicksExistingNames = smartpicksCollections.map(c => c.name);
+
+    if (!smartpicksExistingNames.includes("smartpickscategorie")) {
+      console.log(`[Storage] Creating missing collection: smartpickscategorie in smartpicks`);
+      await this.smartpicksDb.createCollection("smartpickscategorie");
+    }
+
+    const existingSmartPicks = await this.smartpicksCategorieCollection.countDocuments();
+    if (existingSmartPicks === 0) {
+      console.log(`[Storage] Seeding default smart picks categories into smartpicks.smartpickscategorie`);
+      await this.smartpicksCategorieCollection.insertMany([
+        { key: "todaysSpecial", label: "Today's Special", icon: "star", tagline: "Tried and loved picks for today", order: 1, isVisible: true },
+        { key: "chefSpecial", label: "Chef's Special", icon: "chef-hat", tagline: "Handpicked by our head chef", order: 2, isVisible: true },
+      ] as any[]);
+    } else {
+      // Migrate existing documents: add isVisible: true if field is missing
+      await this.smartpicksCategorieCollection.updateMany(
+        { isVisible: { $exists: false } },
+        { $set: { isVisible: true } }
+      );
+    }
+
+    // Sync smart picks flags on startup and watch for live changes
+    await this.syncSmartPicksFlags();
+    this.watchSmartPicksCategories();
+  }
+
+  async getSocialLinks(): Promise<SocialLinks | null> {
+    return await this.linksCollection.findOne({});
+  }
+
+  async updateSocialLinks(data: Partial<Omit<SocialLinks, '_id'>>): Promise<SocialLinks | null> {
+    const existing = await this.linksCollection.findOne({});
+    if (!existing) return null;
+    const updated = await this.linksCollection.findOneAndUpdate(
+      { _id: existing._id },
+      { $set: data },
+      { returnDocument: 'after' }
+    );
+    return updated;
+  }
+
+  async getWelcomeScreenUI(): Promise<WelcomeScreenUI | null> {
+    return await this.welcomeScreenUiCollection.findOne({});
+  }
+
+  async getCoupons(): Promise<Coupon[]> {
+    return await this.couponsCollection.find({ show: true }).toArray();
+  }
+
+  async getCarouselImages(): Promise<CarouselImage[]> {
+    return await this.carouselCollection.find({ visible: true }).sort({ order: 1 }).toArray();
+  }
+
+  async getLogo(): Promise<Logo | null> {
+    return await this.logoCollection.findOne({});
+  }
+
+  async getSmartPicksCategories(): Promise<SmartPicksCategory[]> {
+    return await this.smartpicksCategorieCollection.find({ isVisible: true }).sort({ order: 1 }).toArray();
+  }
+
+  async updateSmartPicksCategoryVisibility(key: string, isVisible: boolean): Promise<SmartPicksCategory | null> {
+    await this.smartpicksCategorieCollection.updateOne({ key }, { $set: { isVisible } });
+    return await this.smartpicksCategorieCollection.findOne({ key }) as SmartPicksCategory | null;
+  }
+
+  async syncSmartPicksFlags(): Promise<void> {
+    const cats = await this.smartpicksCategorieCollection.find({}).toArray();
+    const currentKeys = cats.map(c => c.key);
+
+    const metaCollection = this.smartpicksDb.collection<any>("metadata");
+    const meta = await metaCollection.findOne({ _id: "managedKeys" as any });
+    const previousKeys: string[] = meta?.keys ?? [];
+
+    const keysToAdd = currentKeys.filter(k => !previousKeys.includes(k));
+    const keysToRemove = previousKeys.filter(k => !currentKeys.includes(k));
+
+    if (keysToAdd.length === 0 && keysToRemove.length === 0) return;
+
+    const allCollections = Array.from(this.categoryCollections.values());
+
+    for (const col of allCollections) {
+      for (const key of keysToAdd) {
+        await col.updateMany({ [key]: { $exists: false } }, { $set: { [key]: false } });
+      }
+      if (keysToRemove.length > 0) {
+        const unset: Record<string, string> = {};
+        keysToRemove.forEach(k => { unset[k] = ""; });
+        await col.updateMany({}, { $unset: unset });
+      }
+    }
+
+    await metaCollection.updateOne(
+      { _id: "managedKeys" as any },
+      { $set: { keys: currentKeys } },
+      { upsert: true }
+    );
+
+    if (keysToAdd.length > 0) {
+      console.log(`[SmartPicks] Added flag "${keysToAdd.join(", ")}" to all menu items`);
+    }
+    if (keysToRemove.length > 0) {
+      console.log(`[SmartPicks] Removed flag "${keysToRemove.join(", ")}" from all menu items`);
+    }
+  }
+
+  watchSmartPicksCategories(): void {
+    const changeStream = this.smartpicksCategorieCollection.watch([], { fullDocument: "updateLookup" });
+    changeStream.on("change", async () => {
+      try {
+        await this.syncSmartPicksFlags();
+      } catch (err) {
+        console.error("[SmartPicks] Failed to sync flags after change:", err);
+      }
+    });
+    changeStream.on("error", (err) => {
+      console.error("[SmartPicks] Change stream error:", err);
+    });
+    console.log("[SmartPicks] Watching smartpickscategorie for changes...");
+  }
+
+  private addVisibilityToSubcats(subcats: MenuSubCategory[]): { changed: boolean; result: MenuSubCategory[] } {
+    let changed = false;
+    const result = subcats.map(sub => {
+      const updated: any = { ...sub };
+      if (updated.visible === undefined || updated.visible === null) {
+        updated.visible = true;
+        changed = true;
+      }
+      if (sub.subcategories?.length) {
+        const { changed: childChanged, result: childResult } = this.addVisibilityToSubcats(sub.subcategories);
+        if (childChanged) {
+          updated.subcategories = childResult;
+          changed = true;
+        }
+      }
+      return updated;
+    });
+    return { changed, result };
+  }
+
+  private filterVisibleSubcats(subcats: MenuSubCategory[]): MenuSubCategory[] {
+    return subcats
+      .filter(sub => sub.visible !== false)
+      .map(sub => ({
+        ...sub,
+        subcategories: this.filterVisibleSubcats(sub.subcategories || []),
+      }));
+  }
+
+  async getMenuCategories(): Promise<MenuCategory[]> {
+    const all = await this.categoriesCollection.find({}).sort({ order: 1 }).toArray();
+    return all
+      .filter(cat => cat.visible !== false)
+      .map(cat => ({
+        ...cat,
+        subcategories: this.filterVisibleSubcats(cat.subcategories || []),
+      }));
+  }
+
+  async getUser(id: string): Promise<User | undefined> {
+    const user = await this.usersCollection.findOne({ _id: new ObjectId(id) });
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const user = await this.usersCollection.findOne({ username });
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const now = new Date();
+    const user = { ...insertUser, createdAt: now, updatedAt: now };
+    const result = await this.usersCollection.insertOne(user as any);
+    return { _id: result.insertedId, ...user } as any;
+  }
+
+  async getCustomers(): Promise<Customer[]> {
+    return await this.customersCollection.find({}).sort({ createdAt: -1 }).toArray();
+  }
+
+  async getCustomerByPhone(phone: string): Promise<Customer | undefined> {
+    const customer = await this.customersCollection.findOne({ contactNumber: phone });
+    return customer || undefined;
+  }
+
+  async createOrUpdateCustomer(insertCustomer: InsertCustomer): Promise<{ customer: Customer; isNew: boolean }> {
+    const existing = await this.getCustomerByPhone(insertCustomer.contactNumber);
+    const now = new Date();
+    
+    if (existing) {
+      const lastVisit = existing.lastVisitDate ? new Date(existing.lastVisitDate) : null;
+      const isSameDay = lastVisit && 
+        lastVisit.getFullYear() === now.getFullYear() &&
+        lastVisit.getMonth() === now.getMonth() &&
+        lastVisit.getDate() === now.getDate();
+
+      const updateData: any = { 
+        name: insertCustomer.name, 
+        updatedAt: now,
+        lastVisitDate: now
+      };
+
+      if (!isSameDay) {
+        updateData.$inc = { visitCount: 1 };
+      }
+
+      let updateOperation;
+      if (updateData.$inc) {
+        const { $inc, ...setFields } = updateData;
+        updateOperation = { $set: setFields, $inc };
+      } else {
+        updateOperation = { $set: updateData };
+      }
+
+      const updated = await this.customersCollection.findOneAndUpdate(
+        { _id: existing._id },
+        updateOperation,
+        { returnDocument: 'after' }
+      );
+      return { customer: updated!, isNew: false };
+    }
+    
+    const customer = { 
+      ...insertCustomer, 
+      visitCount: 1,
+      lastVisitDate: now,
+      createdAt: now, 
+      updatedAt: now 
+    };
+    const result = await this.customersCollection.insertOne(customer as any);
+    return { customer: { _id: result.insertedId, ...customer } as any, isNew: true };
+  }
+
+  async getMenuItems(): Promise<MenuItem[]> {
+    const allMenuItems: MenuItem[] = [];
+    const collections = Array.from(this.categoryCollections.values());
+    for (const collection of collections) {
+      const items = await collection.find({}).toArray();
+      allMenuItems.push(...items);
+    }
+    return this.sortMenuItems(allMenuItems);
+  }
+
+  async getMenuItemsByCategory(category: string): Promise<MenuItem[]> {
+    console.log(`[Storage] Fetching items for category: ${category}`);
+    try {
+      // 1. Check current DB ('barrelborn') for a direct collection match
+      let collection = this.db.collection(category) as Collection<MenuItem>;
+      let items = await collection.find({}).toArray();
+      
+      if (items.length > 0) {
+        console.log(`[Storage] Found ${items.length} items in barrelborn.${category}`);
+        return this.sortMenuItems(items.map(item => ({ ...item, category })));
+      }
+
+      // 1.1 Try matching with hyphens replaced by spaces or other common separators
+      const variations = [
+        category,
+        category.replace(/-/g, ' '),
+        category.replace(/-/g, '&'),
+        category.replace(/-/g, ' & '),
+        category.replace(/&/g, '-'),
+        category.replace(/ /g, '-')
+      ];
+
+      for (const variant of Array.from(new Set(variations))) {
+        if (variant === category) continue;
+        const variantColl = this.db.collection(variant) as Collection<MenuItem>;
+        const variantItems = await variantColl.find({}).toArray();
+        if (variantItems.length > 0) {
+          console.log(`[Storage] Found ${variantItems.length} items in barrelborn collection variation: ${variant}`);
+          return this.sortMenuItems(variantItems.map(item => ({ ...item, category: variant })));
+        }
+      }
+
+      // 2. Last-ditch search: Look for items with the category in THEIR name or description across barrelborn collections
+      const dbCollections = await this.db.listCollections().toArray();
+      const allMatches: MenuItem[] = [];
+      for (const collInfo of dbCollections) {
+        const coll = this.db.collection(collInfo.name) as Collection<MenuItem>;
+        const matches = await coll.find({
+          $or: [
+            { name: new RegExp(category.replace(/-/g, ' '), 'i') },
+            { description: new RegExp(category.replace(/-/g, ' '), 'i') }
+          ]
+        }).toArray();
+        if (matches.length > 0) allMatches.push(...matches.map(m => ({ ...m, category: collInfo.name })));
+      }
+      
+      if (allMatches.length > 0) return this.sortMenuItems(allMatches);
+
+      return [];
+    } catch (error) {
+      console.error(`[Storage] Error fetching items for ${category}:`, error);
+      return [];
+    }
+  }
+
+  async getMenuItem(id: string): Promise<MenuItem | undefined> {
+    const collections = Array.from(this.categoryCollections.values());
+    for (const collection of collections) {
+      const menuItem = await collection.findOne({ _id: new ObjectId(id) });
+      if (menuItem) return menuItem;
+    }
+    return undefined;
+  }
+
+  getCategories(): string[] {
+    return [...this.categories];
+  }
+
+  async addMenuItem(item: InsertMenuItem): Promise<MenuItem> {
+    const collection = this.db.collection(item.category);
+    const now = new Date();
+    const menuItem = { ...item, restaurantId: this.restaurantId, createdAt: now, updatedAt: now, __v: 0 };
+    const result = await collection.insertOne(menuItem as any);
+    return { _id: result.insertedId, ...menuItem } as any;
+  }
+
+  async updateMenuItemFlags(id: string, category: string, flags: UpdateMenuItemFlags): Promise<MenuItem | undefined> {
+    const collection = this.db.collection<MenuItem>(category);
+    const updated = await collection.findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: { ...flags, updatedAt: new Date() } },
+      { returnDocument: "after" }
+    );
+    return updated || undefined;
+  }
+
+  async getCartItems(): Promise<CartItem[]> {
+    return await this.cartItemsCollection.find({}).toArray();
+  }
+
+  async addToCart(item: InsertCartItem): Promise<CartItem> {
+    const menuItemId = new ObjectId(item.menuItemId);
+    const existing = await this.cartItemsCollection.findOne({ menuItemId });
+    if (existing) {
+      const updated = await this.cartItemsCollection.findOneAndUpdate(
+        { _id: existing._id },
+        { $inc: { quantity: item.quantity || 1 }, $set: { updatedAt: new Date() } },
+        { returnDocument: 'after' }
+      );
+      return updated!;
+    }
+    const now = new Date();
+    const cartItem = { menuItemId, quantity: item.quantity || 1, createdAt: now, updatedAt: now };
+    const result = await this.cartItemsCollection.insertOne(cartItem as any);
+    return { _id: result.insertedId, ...cartItem } as any;
+  }
+
+  async removeFromCart(id: string): Promise<void> {
+    await this.cartItemsCollection.deleteOne({ _id: new ObjectId(id) });
+  }
+
+  async clearCart(): Promise<void> {
+    await this.cartItemsCollection.deleteMany({});
+  }
+
+  async createReservation(reservation: InsertReservation): Promise<Reservation> {
+    const now = new Date();
+    const doc = { ...reservation, createdAt: now };
+    const result = await this.reservationCollection.insertOne(doc as any);
+    return { _id: result.insertedId, ...doc } as any;
+  }
+
+  async getReservations(): Promise<Reservation[]> {
+    return await this.reservationCollection.find({}).sort({ createdAt: -1 }).toArray();
+  }
+
+  async getPaymentDetails(): Promise<PaymentDetails | null> {
+    return await this.paymentDetailsCollection.findOne({});
+  }
+
+  async getRestaurantInfo(): Promise<RestaurantInfo | null> {
+    return await this.restaurantInfoCollection.findOne({});
+  }
+
+  async updateRestaurantInfo(data: Partial<Omit<RestaurantInfo, '_id'>>): Promise<RestaurantInfo | null> {
+    const existing = await this.restaurantInfoCollection.findOne({});
+    if (!existing) return null;
+    const updated = await this.restaurantInfoCollection.findOneAndUpdate(
+      { _id: existing._id },
+      { $set: data },
+      { returnDocument: 'after' }
+    );
+    return updated;
+  }
+
+  async getCallWaiterStatus(): Promise<CallWaiter | null> {
+    return await this.callWaiterCollection.findOne({});
+  }
+
+  async setCallWaiterStatus(called: boolean): Promise<CallWaiter> {
+    const existing = await this.callWaiterCollection.findOne({});
+    if (existing) {
+      const updated = await this.callWaiterCollection.findOneAndUpdate(
+        { _id: existing._id },
+        { $set: { called } },
+        { returnDocument: "after" }
+      );
+      return updated!;
+    }
+    const result = await this.callWaiterCollection.insertOne({ called } as any);
+    return { _id: result.insertedId, called } as any;
+  }
+
+  async clearDatabase(): Promise<void> {
+    const collections = Array.from(this.categoryCollections.values());
+    for (const collection of collections) {
+      await collection.deleteMany({});
+    }
+  }
+
+  async fixVegNonVegClassification(): Promise<{ updated: number; details: string[] }> {
+    return { updated: 0, details: [] };
+  }
+
+  private sortMenuItems(items: MenuItem[]): MenuItem[] {
+    return items.sort((a, b) => {
+      if (a.isVeg !== b.isVeg) return a.isVeg ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
+  }
+}
+
+const connectionString = process.env.MONGODB_URI;
+
+if (!connectionString) {
+  throw new Error("MONGODB_URI environment variable is required");
+}
+
+export const storage = new MongoStorage(connectionString);
