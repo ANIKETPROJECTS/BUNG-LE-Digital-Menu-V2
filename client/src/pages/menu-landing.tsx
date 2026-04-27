@@ -95,13 +95,13 @@ function CouponCard({
         className="flex rounded-2xl overflow-hidden relative"
         style={{
           border: "1.5px solid #E49B1D",
-          minHeight: "96px",
+          height: "120px",
           boxShadow: "0 4px 20px rgba(228,155,29,0.18)",
         }}
       >
         {/* LEFT — gold gradient discount panel */}
         <div
-          className="flex flex-col items-center justify-center px-4 py-3 flex-shrink-0"
+          className="flex flex-col items-center justify-center px-3 py-2 flex-shrink-0 overflow-hidden"
           style={{
             width: "37%",
             background: "linear-gradient(90deg, #E49B1D, #E6C55A)",
@@ -109,22 +109,36 @@ function CouponCard({
           }}
         >
           <Tag
-            className="w-4 h-4 mb-1"
+            className="w-4 h-4 mb-1 flex-shrink-0"
             style={{ color: "#3D3100", opacity: 0.8 }}
           />
           <p
-            className="text-xl font-black leading-none text-center"
+            className="font-black text-center"
             style={{
               color: "#3D3100",
               fontFamily: "'DM Sans', sans-serif",
               letterSpacing: "-0.5px",
+              fontSize: "clamp(13px, 3.6vw, 18px)",
+              lineHeight: 1.05,
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+              wordBreak: "break-word",
             }}
           >
             {coupon.title}
           </p>
           <p
-            className="text-[9px] uppercase tracking-widest mt-1.5 text-center font-semibold"
-            style={{ color: "#3D3100", opacity: 0.75 }}
+            className="text-[9px] uppercase tracking-widest mt-1 text-center font-semibold w-full"
+            style={{
+              color: "#3D3100",
+              opacity: 0.75,
+              display: "-webkit-box",
+              WebkitLineClamp: 1,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
           >
             {coupon.tag}
           </p>
@@ -132,24 +146,46 @@ function CouponCard({
 
         {/* RIGHT — code + condition on dark background */}
         <div
-          className="flex flex-col justify-center px-4 py-3 text-left flex-1 min-w-0"
+          className="flex flex-col justify-center px-4 py-3 text-left flex-1 min-w-0 overflow-hidden"
           style={{ background: "var(--bb-card)" }}
         >
           <p
-            className="text-sm font-black tracking-widest leading-none uppercase"
-            style={{ color: "var(--bb-gold)", fontFamily: "'DM Sans', sans-serif" }}
+            className="text-sm font-black tracking-widest uppercase"
+            style={{
+              color: "var(--bb-gold)",
+              fontFamily: "'DM Sans', sans-serif",
+              lineHeight: 1.1,
+              display: "-webkit-box",
+              WebkitLineClamp: 1,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
           >
             {coupon.code}
           </p>
           <p
             className="text-[11px] mt-1.5 leading-snug tracking-wide"
-            style={{ color: "var(--bb-gold-2)", opacity: 0.9 }}
+            style={{
+              color: "var(--bb-gold-2)",
+              opacity: 0.9,
+              display: "-webkit-box",
+              WebkitLineClamp: 1,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
           >
             {coupon.subtitle}
           </p>
           <p
             className="text-[10px] mt-1 leading-snug tracking-wide"
-            style={{ color: "var(--bb-text)", opacity: 0.55 }}
+            style={{
+              color: "var(--bb-text)",
+              opacity: 0.55,
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
           >
             {coupon.description}
           </p>
@@ -240,13 +276,13 @@ function CouponsFullScreen({
                   className="flex rounded-2xl overflow-hidden relative w-full"
                   style={{
                     border: "1.5px solid #E49B1D",
-                    minHeight: "104px",
+                    height: "150px",
                     boxShadow: "0 4px 20px rgba(228,155,29,0.18)",
                   }}
                 >
                   {/* LEFT — gold gradient panel */}
                   <div
-                    className="flex flex-col items-center justify-center px-5 py-4 flex-shrink-0"
+                    className="flex flex-col items-center justify-center px-4 py-3 flex-shrink-0 overflow-hidden"
                     style={{
                       width: "36%",
                       background: "linear-gradient(135deg, #E49B1D, #E6C55A)",
@@ -254,22 +290,36 @@ function CouponsFullScreen({
                     }}
                   >
                     <Tag
-                      className="w-4 h-4 mb-1"
+                      className="w-4 h-4 mb-1 flex-shrink-0"
                       style={{ color: "#3D3100", opacity: 0.8 }}
                     />
                     <p
-                      className="text-xl font-black leading-none text-center"
+                      className="font-black text-center"
                       style={{
                         color: "#3D3100",
                         fontFamily: "'DM Sans', sans-serif",
                         letterSpacing: "-0.5px",
+                        fontSize: "clamp(14px, 4vw, 20px)",
+                        lineHeight: 1.05,
+                        display: "-webkit-box",
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        wordBreak: "break-word",
                       }}
                     >
                       {coupon.title}
                     </p>
                     <p
-                      className="text-[9px] uppercase tracking-widest mt-1.5 text-center font-semibold"
-                      style={{ color: "#3D3100", opacity: 0.75 }}
+                      className="text-[9px] uppercase tracking-widest mt-1.5 text-center font-semibold w-full"
+                      style={{
+                        color: "#3D3100",
+                        opacity: 0.75,
+                        display: "-webkit-box",
+                        WebkitLineClamp: 1,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}
                     >
                       {coupon.tag}
                     </p>
@@ -277,27 +327,46 @@ function CouponsFullScreen({
 
                   {/* RIGHT — details on dark background */}
                   <div
-                    className="flex flex-col justify-center px-4 py-3 text-left flex-1 min-w-0"
+                    className="flex flex-col justify-center px-4 py-3 text-left flex-1 min-w-0 overflow-hidden"
                     style={{ background: "var(--bb-card)" }}
                   >
                     <p
-                      className="text-sm font-black tracking-widest leading-none uppercase"
+                      className="text-sm font-black tracking-widest uppercase"
                       style={{
                         color: "var(--bb-gold)",
                         fontFamily: "'DM Sans', sans-serif",
+                        lineHeight: 1.1,
+                        display: "-webkit-box",
+                        WebkitLineClamp: 1,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
                       }}
                     >
                       {coupon.code}
                     </p>
                     <p
                       className="text-[11px] mt-1.5 leading-snug tracking-wide"
-                      style={{ color: "var(--bb-gold-2)", opacity: 0.9 }}
+                      style={{
+                        color: "var(--bb-gold-2)",
+                        opacity: 0.9,
+                        display: "-webkit-box",
+                        WebkitLineClamp: 1,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}
                     >
                       {coupon.subtitle}
                     </p>
                     <p
                       className="text-[10px] mt-1 leading-snug tracking-wide"
-                      style={{ color: "var(--bb-text)", opacity: 0.55 }}
+                      style={{
+                        color: "var(--bb-text)",
+                        opacity: 0.55,
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}
                     >
                       {coupon.description}
                     </p>
