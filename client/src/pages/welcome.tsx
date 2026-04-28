@@ -201,7 +201,7 @@ export default function Welcome() {
           : {
               backgroundImage: `url(${lightBgPattern})`,
               backgroundRepeat: 'repeat',
-              backgroundSize: '400px auto',
+              backgroundSize: 'auto',
             }
       }
     >
