@@ -1,5 +1,6 @@
 const googleReviewImg = "https://res.cloudinary.com/dui1jsojt/image/upload/v1777092671/tarang-assets/Google_Review__1__1773512308220.png";
 const spoonForkImg = "https://res.cloudinary.com/dui1jsojt/image/upload/v1777092667/tarang-assets/19_1773512274982.png";
+import lightBgPattern from "@assets/Untitled_design_(15)_1777395307345.png";
 import { useLocation } from "wouter";
 import { useWelcomeAudio } from "../hooks/useWelcomeAudio";
 import { MediaPreloader } from "../components/media-preloader";
@@ -194,10 +195,18 @@ export default function Welcome() {
   return (
     <div
       className="bb-bg h-screen w-full overflow-hidden relative flex flex-col"
-      style={isDark ? { backgroundColor: '#030101', backgroundImage: 'none' } : undefined}
+      style={
+        isDark
+          ? { backgroundColor: '#030101', backgroundImage: 'none' }
+          : {
+              backgroundImage: `url(${lightBgPattern})`,
+              backgroundRepeat: 'repeat',
+              backgroundSize: 'auto',
+            }
+      }
     >
       {/* Subtle fade over the background (light mode only) */}
-      {!isDark && <div className="absolute inset-0 pointer-events-none" style={{ background: "rgba(255,255,255,0.08)", zIndex: 0 }} />}
+      {!isDark && <div className="absolute inset-0 pointer-events-none" style={{ background: "rgba(255,255,255,0.55)", zIndex: 0 }} />}
       <MediaPreloader onComplete={() => setMediaReady(true)} />
 
       {/* Theme toggle — fixed top left */}
