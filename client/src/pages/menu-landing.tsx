@@ -1165,7 +1165,6 @@ export default function MenuLanding() {
   const { t } = useLanguage();
   const { isDark } = useTheme();
   const [showCoupons, setShowCoupons] = useState(false);
-  const [showPartyMenu, setShowPartyMenu] = useState(false);
 
   const { data: coupons = [] } = useQuery<Coupon[]>({
     queryKey: ["/api/coupons"],
@@ -1246,7 +1245,7 @@ export default function MenuLanding() {
 
   const handleCategoryClick = (categoryId: string) => {
     if (categoryId === "mocktails") {
-      setLocation(`/menu/mocktails/mocktails-drinks`);
+      setLocation(`/menu/mocktails-cocktails`);
       return;
     }
     if (categoryId === "desserts") {
@@ -1531,9 +1530,41 @@ export default function MenuLanding() {
           </div>
         )}
 
+        {/* Celebration Menu Banner — navigates to /partymenu */}
+        <motion.button
+          onClick={() => setLocation("/partymenu")}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.98 }}
+          className="block w-full mb-4"
+          data-testid="button-celebration-menu"
+        >
+          <div
+            className="rounded-xl overflow-hidden relative"
+            style={{ width: "100%", aspectRatio: "1024 / 240", background: "var(--bb-card)" }}
+          >
+            <img
+              src={celebrationMenuBannerImg}
+              alt="Celebration Menu - Join Us For Special Events"
+              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", display: "block" }}
+            />
+          </div>
+          <div className="flex justify-center mt-2">
+            <span
+              className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest"
+              style={{ background: "linear-gradient(135deg, #E49B1D, #E6C55A)", color: "#3D3100" }}
+            >
+              Tap to View
+            </span>
+          </div>
+        </motion.button>
+
         <div className="grid grid-cols-2 gap-3">
-          {menuCategories.map((category, index) => {
-              const label = category.title;
+          {menuCategories.filter((cat) => cat.id !== "cocktails").map((category, index) => {
+              const isMocktails = category.id === "mocktails";
+              const label = isMocktails ? "MOCKTAILS & COCKTAILS" : category.title;
               const imgSrc = failedImages.has(category.id)
                 ? fallbackImg
                 : (category.image || categoryImages[category.id] || fallbackImg);
@@ -1573,14 +1604,28 @@ export default function MenuLanding() {
                       }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    {isMocktails && (
+                      <div className="absolute top-2 right-2 z-10">
+                        <span
+                          className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider"
+                          style={{
+                            background: "linear-gradient(135deg, #E49B1D, #E6C55A)",
+                            color: "#3D3100",
+                            boxShadow: "0 2px 8px rgba(228,155,29,0.5)",
+                          }}
+                        >
+                          Buy 1 Get 1
+                        </span>
+                      </div>
+                    )}
                     <div className="absolute inset-0 flex flex-col items-center justify-end p-2 pb-3">
                       <h3
-                        className="text-xl sm:text-2xl md:text-3xl font-bold tracking-widest uppercase text-center"
+                        className="text-base sm:text-lg md:text-xl font-bold tracking-widest uppercase text-center"
                         style={{
                           fontFamily: "'DM Sans', sans-serif",
                           color: "#FFFFFF",
                           textShadow: "0 2px 8px rgba(0,0,0,0.8)",
-                          letterSpacing: "0.15em",
+                          letterSpacing: "0.1em",
                         }}
                       >
                         {label}
@@ -1592,46 +1637,6 @@ export default function MenuLanding() {
             })}
         </div>
 
-        {/* Celebration Menu Banner — opens party menu modal */}
-        <motion.button
-          onClick={() => setShowPartyMenu(true)}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.98 }}
-          className="block w-full mt-4"
-          data-testid="button-celebration-menu"
-        >
-          <div
-            className="rounded-xl overflow-hidden relative"
-            style={{ width: "100%", aspectRatio: "1024 / 240", background: "var(--bb-card)" }}
-          >
-            <img
-              src={celebrationMenuBannerImg}
-              alt="Celebration Menu - Join Us For Special Events"
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                objectPosition: "center",
-                display: "block",
-              }}
-            />
-          </div>
-          {/* Tap to View pill — below banner */}
-          <div className="flex justify-center mt-2">
-            <span
-              className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest"
-              style={{
-                background: "linear-gradient(135deg, #E49B1D, #E6C55A)",
-                color: "#3D3100",
-              }}
-            >
-              Tap to View
-            </span>
-          </div>
-        </motion.button>
       </div>
 
       <CouponsFullScreen
@@ -1640,10 +1645,6 @@ export default function MenuLanding() {
         coupons={coupons}
       />
 
-      <PartyMenuFullScreen
-        open={showPartyMenu}
-        onClose={() => setShowPartyMenu(false)}
-      />
 
       {/* Image Lightbox */}
       <AnimatePresence>

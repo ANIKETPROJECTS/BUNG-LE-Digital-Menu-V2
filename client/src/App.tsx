@@ -11,14 +11,18 @@ import CategorySelection from "@/pages/category-selection";
 import SubcategoryProducts from "@/pages/subcategory-products";
 import CustomerList from "@/pages/customer-list";
 import NotFound from "@/pages/not-found";
+import MocktailsCocktails from "@/pages/mocktails-cocktails";
+import PartyMenu from "@/pages/party-menu";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Welcome} />
       <Route path="/menu" component={MenuLanding} />
+      <Route path="/menu/mocktails-cocktails" component={MocktailsCocktails} />
       <Route path="/menu/:category" component={CategorySelection} />
       <Route path="/menu/:category/:subcategory" component={SubcategoryProducts} />
+      <Route path="/partymenu" component={PartyMenu} />
       <Route path="/customers" component={CustomerList} />
       <Route component={NotFound} />
     </Switch>
