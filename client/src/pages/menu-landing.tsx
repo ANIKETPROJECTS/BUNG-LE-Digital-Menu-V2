@@ -1,3 +1,4 @@
+import mocktailsCocktailsImg from "@assets/image_1777536917464.png";
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { Coupon, CarouselImage, MenuCategory } from "@shared/schema";
@@ -1551,14 +1552,6 @@ export default function MenuLanding() {
               style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", display: "block" }}
             />
           </div>
-          <div className="flex justify-center mt-2">
-            <span
-              className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest"
-              style={{ background: "linear-gradient(135deg, #E49B1D, #E6C55A)", color: "#3D3100" }}
-            >
-              Tap to View
-            </span>
-          </div>
         </motion.button>
 
         <div className="grid grid-cols-2 gap-3">
@@ -1567,7 +1560,7 @@ export default function MenuLanding() {
               const label = isMocktails ? "MOCKTAILS & COCKTAILS" : category.title;
               const imgSrc = failedImages.has(category.id)
                 ? fallbackImg
-                : (category.image || categoryImages[category.id] || fallbackImg);
+                : (isMocktails ? mocktailsCocktailsImg : (category.image || categoryImages[category.id] || fallbackImg));
               return (
                 <motion.div
                   key={category.id}
@@ -1605,16 +1598,18 @@ export default function MenuLanding() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                     {isMocktails && (
-                      <div className="absolute top-2 right-2 z-10">
+                      <div className="absolute top-3 left-0 z-10">
                         <span
-                          className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider"
+                          className="block text-[9px] font-black uppercase tracking-wider pl-2 pr-3 py-1"
                           style={{
-                            background: "linear-gradient(135deg, #E49B1D, #E6C55A)",
-                            color: "#3D3100",
-                            boxShadow: "0 2px 8px rgba(228,155,29,0.5)",
+                            background: "#DC2626",
+                            color: "#FFFFFF",
+                            clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%)",
+                            boxShadow: "2px 2px 6px rgba(0,0,0,0.4)",
+                            lineHeight: 1.2,
                           }}
                         >
-                          Buy 1 Get 1
+                          BUY 1<br />GET 1
                         </span>
                       </div>
                     )}
