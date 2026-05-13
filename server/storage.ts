@@ -92,7 +92,9 @@ export class MongoStorage implements IStorage {
     "cocktails", "shots", "beer", "alcopops", "wine", "liquor", "beverages",
     "whisky", "single-malt", "bourbon-irish", "vodka", "gin", "rum", "brandy",
     // MOCKTAILS
-    "mocktails-drinks"
+    "mocktails-drinks",
+    // OFFER ITEMS
+    "offer-cocktails", "offer-mocktails"
   ];
 
   constructor(connectionString: string) {
