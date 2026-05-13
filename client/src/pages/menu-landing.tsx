@@ -1510,6 +1510,37 @@ export default function MenuLanding() {
           </div>
         )}
 
+        {/* Celebration Menu Banner — navigates to /partymenu */}
+        <motion.button
+          onClick={() => setLocation("/partymenu")}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.98 }}
+          className="block w-full mb-1"
+          data-testid="button-celebration-menu"
+        >
+          <div
+            className="rounded-xl overflow-hidden relative"
+            style={{ width: "100%", aspectRatio: "1024 / 240", background: "var(--bb-card)" }}
+          >
+            <img
+              src={celebrationMenuBannerImg}
+              alt="Celebration Menu - Join Us For Special Events"
+              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", display: "block" }}
+            />
+          </div>
+        </motion.button>
+
+        {/* Click to view text */}
+        <p
+          className="text-center text-xs uppercase tracking-[0.25em] mb-4"
+          style={{ color: "var(--bb-gold)", opacity: 0.75 }}
+        >
+          Click to View
+        </p>
+
         {/* Coupon Auto-Scroll Carousel — only rendered when at least 1 coupon is visible */}
         {coupons.length > 0 && (
           <div className="py-3 mb-3 overflow-hidden">
@@ -1530,29 +1561,6 @@ export default function MenuLanding() {
             </div>
           </div>
         )}
-
-        {/* Celebration Menu Banner — navigates to /partymenu */}
-        <motion.button
-          onClick={() => setLocation("/partymenu")}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.98 }}
-          className="block w-full mb-4"
-          data-testid="button-celebration-menu"
-        >
-          <div
-            className="rounded-xl overflow-hidden relative"
-            style={{ width: "100%", aspectRatio: "1024 / 240", background: "var(--bb-card)" }}
-          >
-            <img
-              src={celebrationMenuBannerImg}
-              alt="Celebration Menu - Join Us For Special Events"
-              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", display: "block" }}
-            />
-          </div>
-        </motion.button>
 
         <div className="grid grid-cols-2 gap-3">
           {menuCategories.filter((cat) => cat.id !== "cocktails").map((category, index) => {
