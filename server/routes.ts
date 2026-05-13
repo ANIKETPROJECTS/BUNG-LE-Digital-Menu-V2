@@ -362,6 +362,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Offer tile images routes
+  app.get("/api/offer-tile-images", async (req, res) => {
+    try {
+      const images = await storage.getOfferTileImages();
+      if (!images) return res.status(404).json({ message: "Offer tile images not found" });
+      res.json(images);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch offer tile images" });
+    }
+  });
+
+  app.patch("/api/offer-tile-images", async (req, res) => {
+    try {
+      const updated = await storage.updateOfferTileImages(req.body);
+      if (!updated) return res.status(404).json({ message: "Offer tile images not found" });
+      res.json(updated);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update offer tile images" });
+    }
+  });
+
   // Fix veg/non-veg classification
   app.post("/api/fix-veg-classification", async (req, res) => {
     try {

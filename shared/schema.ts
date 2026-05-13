@@ -214,3 +214,9 @@ export type InsertCartItem = z.infer<typeof insertCartItemSchema>;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
 export type InsertReservation = z.infer<typeof insertReservationSchema>;
+
+export interface OfferTileImages {
+  _id: ObjectId;
+  cocktailsImageUrl: string;
+  mocktailsImageUrl: string;
+}

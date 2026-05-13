@@ -1,5 +1,5 @@
 import { MongoClient, Db, Collection, ObjectId } from "mongodb";
-import { type User, type InsertUser, type MenuItem, type InsertMenuItem, type CartItem, type InsertCartItem, type Customer, type InsertCustomer, type SocialLinks, type WelcomeScreenUI, type Coupon, type CarouselImage, type Logo, type MenuCategory, type MenuSubCategory, type Reservation, type InsertReservation, type PaymentDetails, type CallWaiter, type RestaurantInfo, type SmartPicksCategory } from "@shared/schema";
+import { type User, type InsertUser, type MenuItem, type InsertMenuItem, type CartItem, type InsertCartItem, type Customer, type InsertCustomer, type SocialLinks, type WelcomeScreenUI, type Coupon, type CarouselImage, type Logo, type MenuCategory, type MenuSubCategory, type Reservation, type InsertReservation, type PaymentDetails, type CallWaiter, type RestaurantInfo, type SmartPicksCategory, type OfferTileImages } from "@shared/schema";
 
 type UpdateMenuItemFlags = {
   todaysSpecial?: boolean;
@@ -52,6 +52,9 @@ export interface IStorage {
 
   getSmartPicksCategories(): Promise<SmartPicksCategory[]>;
   updateSmartPicksCategoryVisibility(key: string, isVisible: boolean): Promise<SmartPicksCategory | null>;
+
+  getOfferTileImages(): Promise<OfferTileImages | null>;
+  updateOfferTileImages(data: Partial<Omit<OfferTileImages, '_id'>>): Promise<OfferTileImages | null>;
 }
 
 export class MongoStorage implements IStorage {
@@ -78,6 +81,7 @@ export class MongoStorage implements IStorage {
   private restaurantInfoCollection: Collection<RestaurantInfo>;
   private smartpicksDb: Db;
   private smartpicksCategorieCollection: Collection<SmartPicksCategory>;
+  private offerTileImagesCollection: Collection<OfferTileImages>;
   private restaurantId: ObjectId;
 
   private readonly categories = [
@@ -126,6 +130,7 @@ export class MongoStorage implements IStorage {
     this.restaurantInfoCollection = this.hamburgerDb.collection<RestaurantInfo>("restaurantinfo");
     this.smartpicksDb = this.client.db("smartpicks");
     this.smartpicksCategorieCollection = this.smartpicksDb.collection<SmartPicksCategory>("smartpickscategorie");
+    this.offerTileImagesCollection = this.menuPageDb.collection<OfferTileImages>("offertileimages");
     this.restaurantId = new ObjectId("6874cff2a880250859286de6");
   }
 
@@ -529,9 +534,39 @@ export class MongoStorage implements IStorage {
       );
     }
 
+    // Ensure menupage.offertileimages collection exists and is seeded
+    if (!menuPageExistingNames.includes("offertileimages")) {
+      console.log(`[Storage] Creating missing collection: offertileimages in menupage`);
+      await this.menuPageDb.createCollection("offertileimages");
+    }
+
+    const existingOfferTileImages = await this.offerTileImagesCollection.findOne({});
+    if (!existingOfferTileImages) {
+      console.log(`[Storage] Seeding default offer tile images into menupage.offertileimages`);
+      await this.offerTileImagesCollection.insertOne({
+        cocktailsImageUrl: "https://res.cloudinary.com/dui1jsojt/image/upload/v1778699287/tarang-assets/ai_cocktails_hero.png",
+        mocktailsImageUrl: "https://res.cloudinary.com/dui1jsojt/image/upload/v1778699287/tarang-assets/ai_mocktails_hero.png",
+      } as any);
+    }
+
     // Sync smart picks flags on startup and watch for live changes
     await this.syncSmartPicksFlags();
     this.watchSmartPicksCategories();
+  }
+
+  async getOfferTileImages(): Promise<OfferTileImages | null> {
+    return await this.offerTileImagesCollection.findOne({});
+  }
+
+  async updateOfferTileImages(data: Partial<Omit<OfferTileImages, '_id'>>): Promise<OfferTileImages | null> {
+    const existing = await this.offerTileImagesCollection.findOne({});
+    if (!existing) return null;
+    const updated = await this.offerTileImagesCollection.findOneAndUpdate(
+      { _id: existing._id },
+      { $set: data },
+      { returnDocument: 'after' }
+    );
+    return updated;
   }
 
   async getSocialLinks(): Promise<SocialLinks | null> {

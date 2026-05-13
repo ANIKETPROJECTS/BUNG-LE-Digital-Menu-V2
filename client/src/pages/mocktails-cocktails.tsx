@@ -4,31 +4,28 @@ import { ArrowLeft, Menu as MenuIcon, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import HamburgerMenu from "@/components/hamburger-menu";
+import { useQuery } from "@tanstack/react-query";
+import type { OfferTileImages } from "@shared/schema";
 
-const cocktailsImg = "https://res.cloudinary.com/dui1jsojt/image/upload/v1777092668/tarang-assets/COCKTAILS_1766751289781.jpg";
-const mocktailsImg = "https://res.cloudinary.com/dui1jsojt/image/upload/v1777093037/tarang-assets/image_1776833112037.jpg";
-
-const offerTiles = [
-  {
-    id: "offer-cocktails",
-    label: "COCKTAILS",
-    tag: "1 + 1 = ₹499",
-    image: cocktailsImg,
-    route: "/menu/bar/offer-cocktails",
-  },
-  {
-    id: "offer-mocktails",
-    label: "MOCKTAILS",
-    tag: "1 + 1 = ₹399",
-    image: mocktailsImg,
-    route: "/menu/bar/offer-mocktails",
-  },
-];
+const FALLBACK_COCKTAILS = "https://res.cloudinary.com/dui1jsojt/image/upload/v1778699287/tarang-assets/ai_cocktails_hero.png";
+const FALLBACK_MOCKTAILS = "https://res.cloudinary.com/dui1jsojt/image/upload/v1778699287/tarang-assets/ai_mocktails_hero.png";
 
 export default function MocktailsCocktails() {
   const [, setLocation] = useLocation();
   const [showHamburgerMenu, setShowHamburgerMenu] = useState(false);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+
+  const { data: offerTileImages } = useQuery<OfferTileImages>({
+    queryKey: ["/api/offer-tile-images"],
+  });
+
+  const cocktailsImg = offerTileImages?.cocktailsImageUrl || FALLBACK_COCKTAILS;
+  const mocktailsImg = offerTileImages?.mocktailsImageUrl || FALLBACK_MOCKTAILS;
+
+  const offerTiles = [
+    { id: "offer-cocktails", label: "COCKTAILS", image: cocktailsImg, route: "/menu/bar/offer-cocktails" },
+    { id: "offer-mocktails", label: "MOCKTAILS", image: mocktailsImg, route: "/menu/bar/offer-mocktails" },
+  ];
 
   const fallbackImg = "https://res.cloudinary.com/dui1jsojt/image/upload/v1777092683/tarang-assets/coming_soon_imagev2_1766811809828.jpg";
 

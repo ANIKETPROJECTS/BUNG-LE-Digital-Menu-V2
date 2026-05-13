@@ -1,5 +1,16 @@
 uploads = []
-generated = []
+
+[[generated]]
+id = "-RNIEg9oid2kQTQfEvkMq"
+uri = "file://attached_assets/generated_images/cocktails_hero.png"
+type = "image"
+title = "cocktails hero"
+
+[[generated]]
+id = "Oyx5J4drICf1n7vGuqoYG"
+uri = "file://attached_assets/generated_images/mocktails_hero.png"
+type = "image"
+title = "mocktails hero"
 
 [[outputs]]
 id = "ovq0RaByASGvkvUoyjHU2"
