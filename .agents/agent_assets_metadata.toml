@@ -12,6 +12,66 @@ uri = "file://attached_assets/generated_images/mocktails_hero.png"
 type = "image"
 title = "mocktails hero"
 
+[[generated]]
+id = "aZguq2LEucDeDpPu6-SZM"
+uri = "file://attached_assets/generated_images/cocktail_alfa_romeo.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "57Th4GqYms2zNy3QNEaQf"
+uri = "file://attached_assets/generated_images/cocktail_audi.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "7ArHUMQayOswn793jHVSF"
+uri = "file://attached_assets/generated_images/cocktail_bentley.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "wOOC4bjbjoIMdZll_SXRn"
+uri = "file://attached_assets/generated_images/cocktail_bmw.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "ZTaeL5wuF2XQ2M72Frveg"
+uri = "file://attached_assets/generated_images/cocktail_bugatti.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "h6C-ZOhdllHLMfHe74Uyx"
+uri = "file://attached_assets/generated_images/cocktail_ferrari.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "obIhOShGOiyk9SWAFDDZ5"
+uri = "file://attached_assets/generated_images/cocktail_jaguar.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "8_8EdUOeT-8Oz23vE_Sfl"
+uri = "file://attached_assets/generated_images/cocktail_lamborghini.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "-U56DVi5E6PTFwGMJMUFC"
+uri = "file://attached_assets/generated_images/cocktail_mclaren.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "FMwzJqvlq-SK4jfEbZYuV"
+uri = "file://attached_assets/generated_images/cocktail_mercedes.png"
+type = "image"
+title = "generated_image"
+
 [[outputs]]
 id = "ovq0RaByASGvkvUoyjHU2"
 uri = "file://admin-dashboard-prompt.md"
