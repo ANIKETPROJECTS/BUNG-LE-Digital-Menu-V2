@@ -91,6 +91,22 @@ export default function MocktailsCocktails() {
       </header>
 
       <div className="container mx-auto px-3 sm:px-4 pt-6 pb-24">
+        {/* Page heading with red ribbon */}
+        <div className="flex justify-center mb-6">
+          <span
+            className="block text-[13px] font-black uppercase tracking-wider pl-4 pr-6 py-2"
+            style={{
+              background: "#DC2626",
+              color: "#FFFFFF",
+              clipPath: "polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%)",
+              boxShadow: "2px 2px 8px rgba(0,0,0,0.35)",
+              lineHeight: 1.2,
+            }}
+          >
+            BUY 1 GET 1 FREE
+          </span>
+        </div>
+
         {/* Two offer tiles */}
         <div className="grid grid-cols-2 gap-3">
           {offerTiles.map((tile, index) => {
@@ -129,22 +145,6 @@ export default function MocktailsCocktails() {
                     onError={() => setFailedImages((prev) => new Set(prev).add(tile.id))}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-
-                  {/* Red ribbon - same as home page */}
-                  <div className="absolute top-3 left-0">
-                    <span
-                      className="block text-[11px] font-black uppercase tracking-wider pl-3 pr-5 py-1.5"
-                      style={{
-                        background: "#DC2626",
-                        color: "#FFFFFF",
-                        clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)",
-                        boxShadow: "2px 2px 6px rgba(0,0,0,0.4)",
-                        lineHeight: 1.2,
-                      }}
-                    >
-                      BUY 1 GET 1 FREE
-                    </span>
-                  </div>
 
                   <div className="absolute inset-0 flex flex-col items-center justify-end p-2 pb-3">
                     <h3
