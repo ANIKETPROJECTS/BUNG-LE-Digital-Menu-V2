@@ -1535,7 +1535,7 @@ export default function MenuLanding() {
 
         {/* Click to view text */}
         <p
-          className="text-center text-xs uppercase tracking-[0.25em] mb-4"
+          className="text-center text-xs uppercase tracking-[0.25em] mb-3"
           style={{ color: "var(--bb-gold)", opacity: 0.75 }}
         >
           Click to View
