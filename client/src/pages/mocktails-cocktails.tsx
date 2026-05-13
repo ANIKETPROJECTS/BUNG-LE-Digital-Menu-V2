@@ -21,7 +21,7 @@ const categories = [
     label: "COCKTAILS",
     description: "Expertly mixed drinks",
     image: cocktailsImg,
-    route: "/menu/cocktails",
+    route: "/menu/bar/cocktails",
   },
 ];
 
