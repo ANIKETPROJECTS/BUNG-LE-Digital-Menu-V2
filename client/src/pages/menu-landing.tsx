@@ -1608,11 +1608,11 @@ export default function MenuLanding() {
                     {isMocktails && (
                       <div className="absolute top-3 left-0 z-10">
                         <span
-                          className="block text-[11px] font-black uppercase tracking-wider pl-2 pr-4 py-1.5"
+                          className="block text-[13px] font-black uppercase tracking-wider pl-3 pr-5 py-2"
                           style={{
                             background: "#DC2626",
                             color: "#FFFFFF",
-                            clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%)",
+                            clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)",
                             boxShadow: "2px 2px 6px rgba(0,0,0,0.4)",
                             lineHeight: 1.2,
                           }}
