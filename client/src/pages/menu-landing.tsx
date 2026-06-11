@@ -661,8 +661,8 @@ function PartyMenuFullScreen({ open, onClose }: { open: boolean; onClose: () => 
             </button>
 
             <img
-              src="/tarang-logo-circle.png"
-              alt="Tarang Kitchen & Bar"
+              src="/bungle-logo.svg"
+              alt="Bung-le"
               className="w-28 h-28 object-contain mb-2"
               data-testid="img-party-menu-logo"
             />
@@ -1278,8 +1278,8 @@ export default function MenuLanding() {
 
             <div className="flex-1 flex justify-center items-center overflow-visible">
               <img
-                src="/tarang-logo-circle.png"
-                alt="Tarang Kitchen & Bar"
+                src="/bungle-logo.svg"
+                alt="Bung-le"
                 style={{ height: "68px", width: "68px", objectFit: "contain", display: "block", transform: "scale(1.45)", transformOrigin: "center", marginTop: "8px" }}
                 data-testid="img-logo"
               />
@@ -1359,8 +1359,8 @@ export default function MenuLanding() {
               <div className="px-7 pt-6 pb-7 flex flex-col items-center">
                 {/* Logo */}
                 <img
-                  src="/tarang-logo-circle.png"
-                  alt="Tarang Kitchen & Bar"
+                  src="/bungle-logo.svg"
+                  alt="Bung-le"
                   className="mb-1"
                   style={{ width: "200px", height: "200px", objectFit: "contain", borderRadius: "50%" }}
                 />

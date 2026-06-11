@@ -1,5 +1,5 @@
 const MYMEMORY_URL = "https://api.mymemory.translated.net/get";
-const CACHE_KEY = "tarang_trans_v1";
+const CACHE_KEY = "bungle_trans_v1";
 
 function decodeHtmlEntities(text: string): string {
   const entities: Record<string, string> = {

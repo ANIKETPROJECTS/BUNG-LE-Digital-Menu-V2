@@ -478,7 +478,7 @@ export default function HamburgerMenu({
                   <div className="flex flex-col items-center gap-2 pt-1">
                     <div className="w-44 h-44 rounded-xl flex items-center justify-center" style={{ background: "white", border: "3px solid #E49B1D" }}>
                       <img
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=176x176&data=${encodeURIComponent(`upi://pay?pa=${upiId}&pn=${restaurantInfo?.name || "Tarang Kitchen & Bar"}&cu=INR`)}`}
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=176x176&data=${encodeURIComponent(`upi://pay?pa=${upiId}&pn=${restaurantInfo?.name || "Bung-le"}&cu=INR`)}`}
                         alt="UPI QR Code"
                         className="w-40 h-40 object-contain rounded"
                       />
@@ -489,7 +489,7 @@ export default function HamburgerMenu({
                   </div>
 
                   {(() => {
-                    const payeeName = restaurantInfo?.name || "Tarang Kitchen & Bar";
+                    const payeeName = restaurantInfo?.name || "Bung-le";
                     const upiQuery = `pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&cu=INR`;
                     const apps: { label: string; scheme: string; logo: string; scale: number }[] = [
                       { label: "GPay", scheme: `tez://upi/pay?${upiQuery}`, logo: gpayLogo, scale: 1.25 },
@@ -588,7 +588,7 @@ export default function HamburgerMenu({
                       <div>
                         <button onClick={() => window.open(resolveLink(restaurantInfo?.instagram?.linkKey) ?? "https://www.instagram.com", "_blank", "noopener,noreferrer")}
                           className="text-sm font-bold flex items-center gap-1 transition-opacity hover:opacity-80" style={{ color: isDark ? "#FFFFFF" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif" }}>
-                          {restaurantInfo?.instagram?.name ?? "@tarangkitchenandbar"} <ExternalLink className="w-3 h-3" style={{ color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.3)" }} />
+                          {restaurantInfo?.instagram?.name ?? "@bungle"} <ExternalLink className="w-3 h-3" style={{ color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.3)" }} />
                         </button>
                         <p className="text-[10px] mt-0.5" style={{ color: isDark ? "#FFFFFF" : "#555555", fontFamily: "'DM Sans', sans-serif" }}>{restaurantInfo?.instagram?.subtext ?? t.followForUpdates}</p>
                       </div>

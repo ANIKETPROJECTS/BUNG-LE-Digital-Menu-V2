@@ -169,16 +169,34 @@ export class MongoStorage implements IStorage {
     if (!existingLinks) {
       console.log(`[Storage] Seeding default social links document`);
       await this.linksCollection.insertOne({
-        instagram: "https://www.instagram.com/tarangkitchenandbar/",
-        facebook: "https://facebook.com",
+        instagram: "https://www.instagram.com/",
+        facebook: "https://www.facebook.com/",
         youtube: "https://youtube.com",
-        googleReview: "https://g.page/r/CbKAeLOlg005EBM/review",
-        locate: "https://maps.app.goo.gl/C7K6BijrGrvWTXyBA",
-        call: "tel:+918278251111",
-        whatsapp: "https://wa.me/918278251111",
-        email: "mailto:tarang.hospitality@gmail.com",
-        website: "https://www.atdigitalmenu.com",
+        googleReview: "https://g.page/r/",
+        locate: "https://maps.google.com",
+        call: "tel:+91",
+        whatsapp: "https://wa.me/91",
+        email: "mailto:info@bungle.com",
+        website: "https://www.bungle.com",
       } as any);
+    } else if ((existingLinks as any).instagram?.includes("tarang") || (existingLinks as any).email?.includes("tarang")) {
+      console.log(`[Storage] Migrating social links from Tarang to Bung-le branding`);
+      await this.linksCollection.updateOne(
+        { _id: existingLinks._id },
+        {
+          $set: {
+            instagram: "https://www.instagram.com/",
+            facebook: "https://www.facebook.com/",
+            youtube: "https://youtube.com",
+            googleReview: "https://g.page/r/",
+            locate: "https://maps.google.com",
+            call: "tel:+91",
+            whatsapp: "https://wa.me/91",
+            email: "mailto:info@bungle.com",
+            website: "https://www.bungle.com",
+          }
+        }
+      );
     }
 
     // Ensure welcomescreen.welcomescreenui collection exists with seed document
@@ -484,14 +502,27 @@ export class MongoStorage implements IStorage {
     if (!existingRestaurantInfo) {
       console.log(`[Storage] Seeding default restaurantinfo into hamburger.restaurantinfo`);
       await this.restaurantInfoCollection.insertOne({
-        location:  { name: "Tarang Kitchen & Bar", subtext: "Open in Google Maps",     show: true, linkKey: "locate"    },
-        contact:   { name: "+91 77383 10238", subtext: "For Reservations and Orders", show: true, linkKey: "call"    },
-        hours:     { name: "11.30 AM - 11.30 PM", subtext: "Open All Days",            show: true                      },
-        instagram: { name: "@tarangkitchenandbar", subtext: "Follow Us for Updates",   show: true, linkKey: "instagram" },
-        facebook:  { name: "Tarang Kitchen and Bar", subtext: "Follow on Facebook",    show: true, linkKey: "facebook"  },
-        youtube:   { name: "Tarang Kitchen & Bar", subtext: "Watch on YouTube",        show: true, linkKey: "youtube"   },
-        whatsapp:  { name: "+91 77383 10238", subtext: "Chat on WhatsApp",             show: true, linkKey: "whatsapp"  },
+        location:  { name: "Bung-le", subtext: "Open in Google Maps",               show: true, linkKey: "locate"    },
+        contact:   { name: "+91 XXXXXXXXXX", subtext: "For Reservations and Orders", show: true, linkKey: "call"      },
+        hours:     { name: "11.30 AM - 11.30 PM", subtext: "Open All Days",          show: true                       },
+        instagram: { name: "@bungle", subtext: "Follow Us for Updates",              show: true, linkKey: "instagram"  },
+        facebook:  { name: "Bung-le", subtext: "Follow on Facebook",                show: true, linkKey: "facebook"   },
+        youtube:   { name: "Bung-le", subtext: "Watch on YouTube",                  show: true, linkKey: "youtube"    },
+        whatsapp:  { name: "+91 XXXXXXXXXX", subtext: "Chat on WhatsApp",            show: true, linkKey: "whatsapp"  },
       } as any);
+    } else if ((existingRestaurantInfo as any).location?.name?.includes("Tarang") || (existingRestaurantInfo as any).instagram?.name?.includes("tarang")) {
+      console.log(`[Storage] Migrating restaurantinfo from Tarang to Bung-le branding`);
+      await this.restaurantInfoCollection.updateOne(
+        { _id: existingRestaurantInfo._id },
+        {
+          $set: {
+            "location.name": "Bung-le",
+            "instagram.name": "@bungle",
+            "facebook.name": "Bung-le",
+            "youtube.name": "Bung-le",
+          }
+        }
+      );
     } else if (existingRestaurantInfo.location && typeof (existingRestaurantInfo.location as any).show === 'undefined') {
       console.log(`[Storage] Migrating restaurantinfo to add show/linkKey fields`);
       await this.restaurantInfoCollection.updateOne(

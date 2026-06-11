@@ -19,7 +19,7 @@ const LanguageContext = createContext<LanguageContextType>({
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<string>(() => {
     try {
-      return localStorage.getItem("tarang_language") || "en";
+      return localStorage.getItem("bungle_language") || "en";
     } catch {
       return "en";
     }
@@ -52,7 +52,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const setLanguage = useCallback((lang: string) => {
     setLanguageState(lang);
     try {
-      localStorage.setItem("tarang_language", lang);
+      localStorage.setItem("bungle_language", lang);
     } catch {}
     applyLanguage(lang);
   }, [applyLanguage]);

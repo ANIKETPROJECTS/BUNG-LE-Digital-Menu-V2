@@ -245,8 +245,8 @@ export default function PartyMenu() {
         </button>
 
         <img
-          src="/tarang-logo-circle.png"
-          alt="Tarang Kitchen & Bar"
+          src="/bungle-logo.svg"
+          alt="Bung-le"
           className="w-28 h-28 object-contain mb-2"
           data-testid="img-party-menu-logo"
         />

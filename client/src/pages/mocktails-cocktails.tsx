@@ -49,8 +49,8 @@ export default function MocktailsCocktails() {
 
             <div className="flex-1 flex justify-center items-center overflow-visible">
               <img
-                src="/tarang-logo-circle.png"
-                alt="Tarang Kitchen & Bar"
+                src="/bungle-logo.svg"
+                alt="Bung-le"
                 style={{ height: "68px", width: "68px", objectFit: "contain", display: "block", transform: "scale(1.45)", transformOrigin: "center", marginTop: "8px" }}
                 data-testid="img-logo"
               />

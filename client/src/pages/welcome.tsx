@@ -8,7 +8,7 @@ import { useState, useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import LanguageDropdown from "@/components/language-dropdown";
-const atDigitalMenuLogo = "https://res.cloudinary.com/dui1jsojt/image/upload/v1777092678/tarang-assets/Tarang_Logo_insta_1776533106517.png";
+const atDigitalMenuLogo = "/bungle-logo.svg";
 const instaImg = "https://res.cloudinary.com/dui1jsojt/image/upload/v1777093081/tarang-assets/instagram__2__1773345405292.png";
 const fbImg = "https://res.cloudinary.com/dui1jsojt/image/upload/v1777092684/tarang-assets/facebook__2__1773345408410.png";
 const ytImg = "https://res.cloudinary.com/dui1jsojt/image/upload/v1777093085/tarang-assets/youtube_1773345412112.png";
@@ -39,15 +39,15 @@ interface WelcomeScreenUI {
 }
 
 const DEFAULT_LINKS: SocialLinks = {
-  instagram: "https://www.instagram.com/tarangkitchenandbar/",
-  facebook: "https://www.facebook.com/Tarangkitchenandbar/",
+  instagram: "https://www.instagram.com/",
+  facebook: "https://www.facebook.com/",
   youtube: "https://youtube.com",
-  googleReview: "https://g.page/r/CbKAeLOlg005EBM/review",
-  locate: "https://maps.app.goo.gl/CQLKFLDWPQK5f6U7A",
-  call: "tel:+917738310238",
-  whatsapp: "https://wa.me/917738310238",
-  email: "mailto:TARANG.HOSPITALITY@GMAIL.COM",
-  website: "https://www.tarangkitchenandbar.com",
+  googleReview: "https://g.page/r/",
+  locate: "https://maps.google.com",
+  call: "tel:+91",
+  whatsapp: "https://wa.me/91",
+  email: "mailto:info@bungle.com",
+  website: "https://www.bungle.com",
 };
 
 const DEFAULT_WELCOME_UI: WelcomeScreenUI = {
@@ -227,7 +227,7 @@ export default function Welcome() {
         >
           <img
             src={logoSrc}
-            alt="AT Digital Menu"
+            alt="Bung-le"
             style={{
               width: "270px",
               maxWidth: "100%",
