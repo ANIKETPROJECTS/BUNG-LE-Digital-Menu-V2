@@ -1330,9 +1330,11 @@ export default function MenuLanding() {
             <motion.div
               className="relative w-full max-w-sm rounded-3xl overflow-hidden"
               style={{
-                background: "#030101",
-                border: isDark ? "5px solid #E49B1D" : "5px solid #c4722a",
-                boxShadow: "0 0 60px rgba(228,155,29,0.18), 0 24px 64px rgba(0,0,0,0.7)",
+                background: isDark ? "#0A0800" : "#FFFFFF",
+                border: isDark ? "4px solid #E49B1D" : "4px solid #C8960A",
+                boxShadow: isDark
+                  ? "0 0 60px rgba(228,155,29,0.18), 0 24px 64px rgba(0,0,0,0.7)"
+                  : "0 8px 48px rgba(200,150,10,0.18), 0 24px 64px rgba(0,0,0,0.12)",
                 fontFamily: "'DM Sans', sans-serif",
               }}
               initial={{ scale: 0.88, y: 40, opacity: 0 }}
@@ -1343,14 +1345,18 @@ export default function MenuLanding() {
               {/* Gold shimmer top bar */}
               <div
                 className="h-[3px] w-full"
-                style={{ background: "linear-gradient(90deg, transparent, #E49B1D, #C4722A, #E49B1D, transparent)" }}
+                style={{ background: "linear-gradient(90deg, transparent, #C8960A, #E8B830, #C8960A, transparent)" }}
               />
 
               {/* Close button */}
               <button
                 onClick={handleSkip}
                 className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110"
-                style={{ background: "#E49B1D", color: "#030101", border: "none" }}
+                style={{
+                  background: isDark ? "#E49B1D" : "#C8960A",
+                  color: isDark ? "#030101" : "#FFFFFF",
+                  border: "none",
+                }}
                 data-testid="button-close-popup"
               >
                 <X className="w-4 h-4" strokeWidth={3} />
@@ -1367,15 +1373,15 @@ export default function MenuLanding() {
 
                 {/* Ornamental divider */}
                 <div className="flex items-center gap-3 w-full mb-4">
-                  <div className="flex-1 h-px" style={{ background: "linear-gradient(to right, transparent, #E49B1D)" }} />
-                  <span className="text-[10px] tracking-[0.3em] font-medium" style={{ color: "#E49B1D", fontFamily: "'DM Sans', sans-serif" }}>WELCOME</span>
-                  <div className="flex-1 h-px" style={{ background: "linear-gradient(to left, transparent, #E49B1D)" }} />
+                  <div className="flex-1 h-px" style={{ background: isDark ? "linear-gradient(to right, transparent, #E49B1D)" : "linear-gradient(to right, transparent, #C8960A)" }} />
+                  <span className="text-[10px] tracking-[0.3em] font-medium" style={{ color: isDark ? "#E49B1D" : "#8B6200", fontFamily: "'DM Sans', sans-serif" }}>WELCOME</span>
+                  <div className="flex-1 h-px" style={{ background: isDark ? "linear-gradient(to left, transparent, #E49B1D)" : "linear-gradient(to left, transparent, #C8960A)" }} />
                 </div>
 
                 {/* Headline */}
                 <h2
                   className="text-center font-bold mb-5 leading-none uppercase whitespace-nowrap"
-                  style={{ color: "#E49B1D", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", letterSpacing: "0.12em" }}
+                  style={{ color: isDark ? "#E49B1D" : "#7A5000", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", letterSpacing: "0.12em" }}
                 >
                   Please Enter Your Details
                 </h2>
@@ -1383,7 +1389,7 @@ export default function MenuLanding() {
                 <form onSubmit={handleSubmit} className="w-full space-y-4">
                   {/* Name field */}
                   <div className="space-y-1">
-                    <label className="text-[13px] tracking-[0.15em] font-semibold uppercase" style={{ color: "#E49B1D", fontFamily: "'DM Sans', sans-serif" }}>
+                    <label className="text-[13px] tracking-[0.15em] font-semibold uppercase" style={{ color: isDark ? "#E49B1D" : "#8B6200", fontFamily: "'DM Sans', sans-serif" }}>
                       Your Name
                     </label>
                     <input
@@ -1392,9 +1398,9 @@ export default function MenuLanding() {
                       placeholder="Enter your name"
                       className="customer-form-input w-full bg-transparent outline-none text-sm font-medium py-2"
                       style={{
-                        borderBottom: "2px solid #E49B1D",
-                        color: "#E49B1D",
-                        caretColor: "#E49B1D",
+                        borderBottom: isDark ? "2px solid #E49B1D" : "2px solid #C8960A",
+                        color: isDark ? "#E49B1D" : "#2A1A00",
+                        caretColor: "#C8960A",
                         fontFamily: "'DM Sans', sans-serif",
                       }}
                       data-testid="input-customer-name"
@@ -1403,7 +1409,7 @@ export default function MenuLanding() {
 
                   {/* Phone — underline input */}
                   <div className="space-y-1">
-                    <label className="text-[13px] tracking-[0.15em] font-semibold uppercase" style={{ color: "#E49B1D", fontFamily: "'DM Sans', sans-serif" }}>
+                    <label className="text-[13px] tracking-[0.15em] font-semibold uppercase" style={{ color: isDark ? "#E49B1D" : "#8B6200", fontFamily: "'DM Sans', sans-serif" }}>
                       Contact Number
                     </label>
                     <input
@@ -1418,15 +1424,15 @@ export default function MenuLanding() {
                       placeholder="Enter contact number"
                       className="customer-form-input w-full bg-transparent outline-none text-sm font-medium py-2"
                       style={{
-                        borderBottom: "2px solid #E49B1D",
-                        color: "#E49B1D",
-                        caretColor: "#E49B1D",
+                        borderBottom: isDark ? "2px solid #E49B1D" : "2px solid #C8960A",
+                        color: isDark ? "#E49B1D" : "#2A1A00",
+                        caretColor: "#C8960A",
                         fontFamily: "'DM Sans', sans-serif",
                       }}
                       data-testid="input-customer-phone"
                     />
                     {customerPhone.length > 0 && customerPhone.length < 10 && (
-                      <p className="text-[10px]" style={{ color: "#E49B1D", opacity: 0.7, fontFamily: "'DM Sans', sans-serif" }}>
+                      <p className="text-[10px]" style={{ color: isDark ? "#E49B1D" : "#8B6200", opacity: 0.7, fontFamily: "'DM Sans', sans-serif" }}>
                         {10 - customerPhone.length} digit{10 - customerPhone.length !== 1 ? "s" : ""} remaining
                       </p>
                     )}
@@ -1438,10 +1444,10 @@ export default function MenuLanding() {
                     disabled={isSubmitting || customerName.length === 0 || customerPhone.length !== 10}
                     className="w-full h-12 rounded-full font-bold tracking-widest text-sm transition-all active:scale-95 disabled:opacity-40 mt-2"
                     style={{
-                      background: "linear-gradient(90deg, #E49B1D, #C4722A)",
-                      color: "#030101",
+                      background: "linear-gradient(90deg, #C8960A, #E8B830)",
+                      color: "#FFFFFF",
                       letterSpacing: "0.15em",
-                      boxShadow: "0 4px 20px rgba(228,155,29,0.35)",
+                      boxShadow: "0 4px 20px rgba(200,150,10,0.35)",
                     }}
                     data-testid="button-submit-customer"
                   >
@@ -1453,7 +1459,7 @@ export default function MenuLanding() {
                     type="button"
                     onClick={handleSkip}
                     className="w-full text-center text-xs py-1 transition-opacity hover:opacity-70"
-                    style={{ color: "#E49B1D", letterSpacing: "0.08em", opacity: 0.7, fontFamily: "'DM Sans', sans-serif" }}
+                    style={{ color: isDark ? "#E49B1D" : "#8B6200", letterSpacing: "0.08em", opacity: 0.7, fontFamily: "'DM Sans', sans-serif" }}
                     data-testid="button-skip-popup"
                   >
                     Continue without entering details →
@@ -1464,7 +1470,7 @@ export default function MenuLanding() {
               {/* Gold shimmer bottom bar */}
               <div
                 className="h-[2px] w-full"
-                style={{ background: "linear-gradient(90deg, transparent, #E49B1D, transparent)" }}
+                style={{ background: "linear-gradient(90deg, transparent, #C8960A, transparent)" }}
               />
             </motion.div>
           </motion.div>
@@ -1509,37 +1515,6 @@ export default function MenuLanding() {
             </div>
           </div>
         )}
-
-        {/* Celebration Menu Banner — navigates to /partymenu */}
-        <motion.button
-          onClick={() => setLocation("/partymenu")}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.98 }}
-          className="block w-full mb-1"
-          data-testid="button-celebration-menu"
-        >
-          <div
-            className="rounded-xl overflow-hidden relative"
-            style={{ width: "100%", aspectRatio: "1024 / 240", background: "var(--bb-card)" }}
-          >
-            <img
-              src={celebrationMenuBannerImg}
-              alt="Celebration Menu - Join Us For Special Events"
-              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", display: "block" }}
-            />
-          </div>
-        </motion.button>
-
-        {/* Click to view text */}
-        <p
-          className="text-center text-xs uppercase tracking-[0.25em] mb-3"
-          style={{ color: "var(--bb-gold)", opacity: 0.75 }}
-        >
-          Click to View
-        </p>
 
         {/* Coupon Auto-Scroll Carousel — only rendered when at least 1 coupon is visible */}
         {coupons.length > 0 && (

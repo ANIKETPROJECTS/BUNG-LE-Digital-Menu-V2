@@ -197,8 +197,9 @@ export default function Welcome() {
       className="bb-bg h-screen w-full overflow-hidden relative flex flex-col"
       style={
         isDark
-          ? { backgroundColor: '#030101', backgroundImage: 'none' }
+          ? { backgroundColor: '#000000', backgroundImage: 'none' }
           : {
+              backgroundColor: '#FDFAF4',
               backgroundImage: `url(${lightBgPattern})`,
               backgroundRepeat: 'repeat',
               backgroundSize: 'auto',

@@ -239,36 +239,35 @@
   }
 }
 
-/* ── Barrelborn theme variables ────────────────────────────── */
-/* Default = dark (current look). Light overrides applied below. */
+/* ── Bung-le theme variables — Golden & White ───────────────── */
 :root {
-  --bb-bg:        #d98540;
-  --bb-card:      #030101;
-  --bb-card-alt:  #030101;
-  --bb-gold:      #E49B1D;
-  --bb-gold-2:    #C4722A;
-  --bb-text:      #DCD4C8;
-  --bb-text-dim:  rgba(220,212,200,0.55);
-  --bb-border:    rgba(228,155,29,0.25);
-  --bb-header:    #030101;
-  --bb-search-bg: rgba(255,255,255,0.06);
-  --bb-search-br: rgba(228,155,29,0.3);
-  --bb-input-text:#E8D8B4;
+  --bb-bg:        #FDFAF4;
+  --bb-card:      #FFFFFF;
+  --bb-card-alt:  #FFFDF7;
+  --bb-gold:      #9A6E00;
+  --bb-gold-2:    #B07A00;
+  --bb-text:      #2A1A00;
+  --bb-text-dim:  rgba(42,26,0,0.5);
+  --bb-border:    rgba(180,130,0,0.22);
+  --bb-header:    #FFFFFF;
+  --bb-search-bg: rgba(200,150,0,0.05);
+  --bb-search-br: rgba(160,110,0,0.28);
+  --bb-input-text:#2A1A00;
 }
 
 [data-theme="light"] {
-  --bb-bg:        #FFFFFF;
+  --bb-bg:        #FDFAF4;
   --bb-card:      #FFFFFF;
-  --bb-card-alt:  #FFFFFF;
-  --bb-gold:      #8B6200;
-  --bb-gold-2:    #A87800;
-  --bb-text:      #1a1a1a;
-  --bb-text-dim:  rgba(0,0,0,0.5);
-  --bb-border:    rgba(0,0,0,0.1);
+  --bb-card-alt:  #FFFDF7;
+  --bb-gold:      #9A6E00;
+  --bb-gold-2:    #B07A00;
+  --bb-text:      #2A1A00;
+  --bb-text-dim:  rgba(42,26,0,0.5);
+  --bb-border:    rgba(180,130,0,0.22);
   --bb-header:    #FFFFFF;
-  --bb-search-bg: rgba(0,0,0,0.04);
-  --bb-search-br: rgba(139,98,0,0.25);
-  --bb-input-text:#1a1a1a;
+  --bb-search-bg: rgba(200,150,0,0.05);
+  --bb-search-br: rgba(160,110,0,0.28);
+  --bb-input-text:#2A1A00;
 }
 
 [data-theme="dark"] {
@@ -289,7 +288,7 @@
 [data-theme="light"],
 [data-theme="light"] body,
 [data-theme="light"] #root {
-  background-color: #FFFFFF;
+  background-color: #FDFAF4;
   background-image: none;
 }
 
@@ -309,7 +308,7 @@
 
 [data-theme="light"] .bb-bg {
   background-image: none;
-  background-color: #FFFFFF;
+  background-color: #FDFAF4;
 }
 
 [data-theme="dark"] .bb-bg {
@@ -317,42 +316,68 @@
   background-color: #000000;
 }
 
-/* Welcome page — button (same style in both themes) */
+/* Welcome page — explore button: white panel, rich gold border */
 .btn-explore {
-  background: #030101;
-  border: 5px solid #c4722a;
-  color: #E49B1D;
+  background: #FFFFFF;
+  border: 4px solid #C8960A;
+  color: #7A5000;
   font-size: 18px;
+  box-shadow: 0 4px 18px rgba(200,150,10,0.18);
 }
 
-/* Customer details form inputs — white placeholder */
+.btn-explore:hover {
+  background: #FFFBF0;
+  box-shadow: 0 6px 24px rgba(200,150,10,0.28);
+}
+
+/* btn-icon inside explore button — override to dark gold on white */
+.btn-explore .btn-icon {
+  background-color: #C8960A !important;
+}
+
+/* Customer details form inputs — placeholder adapts to theme */
 .customer-form-input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(150, 100, 0, 0.45);
 }
 
-/* Welcome page — social card (same style in both themes) */
+[data-theme="dark"] .customer-form-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* Welcome page — social card: white panel, gold border */
 .social-card {
-  background: #030101;
+  background: #FFFFFF;
   border-radius: 20px;
-  border: 5px solid #c4722a;
+  border: 4px solid #C8960A;
   padding: 20px 16px 16px;
-}
-.social-card-label {
-  color: #E49B1D;
-}
-.social-card-divider {
-  background: #E49B1D !important;
+  box-shadow: 0 6px 32px rgba(200,150,10,0.14);
 }
 
+.social-card-label {
+  color: #8B6200;
+}
+
+.social-card-divider {
+  background: rgba(200,150,10,0.28) !important;
+}
+
+/* Header: always white with a faint gold underline */
 .bb-header {
   background-color: #FFFFFF;
   background-image: none;
+  border-bottom: 1px solid rgba(200,150,10,0.18);
 }
 
 [data-theme="light"] .bb-header {
   background-color: #FFFFFF;
+  border-bottom: 1px solid rgba(200,150,10,0.18);
 }
-/* ── end theme variables ────────────────────────────────────── */
+
+[data-theme="dark"] .bb-header {
+  background-color: #000000;
+  border-bottom: 1px solid rgba(228,155,29,0.2);
+}
+/* ── end Bung-le theme variables ─────────────────────────────── */
 
 @keyframes coupon-marquee {
   0%   { transform: translateX(0); }
