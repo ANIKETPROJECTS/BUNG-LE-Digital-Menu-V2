@@ -136,7 +136,62 @@ export class MongoStorage implements IStorage {
 
   async connect() {
     await this.client.connect();
-    
+
+    // --- Remove legacy placeholder data seeded by earlier versions ---
+    // Coupons
+    const deletedCoupons = await this.couponsCollection.deleteMany({
+      code: { $in: ["BARREL20", "HAPPYHOUR", "CRAFT15", "WELCOME50", "WEEKEND25"] }
+    });
+    if (deletedCoupons.deletedCount > 0)
+      console.log(`[Storage] Removed ${deletedCoupons.deletedCount} placeholder coupon(s)`);
+
+    // Carousel placeholder images
+    const deletedCarousel = await this.carouselCollection.deleteMany({
+      url: { $regex: "^/carousel/promo" }
+    });
+    if (deletedCarousel.deletedCount > 0)
+      console.log(`[Storage] Removed ${deletedCarousel.deletedCount} placeholder carousel image(s)`);
+
+    // Logo placeholder (AT Digital Menu logo)
+    const deletedLogo = await this.logoCollection.deleteMany({
+      url: { $regex: "atdigitalmenu\\.com" }
+    });
+    if (deletedLogo.deletedCount > 0)
+      console.log(`[Storage] Removed ${deletedLogo.deletedCount} placeholder logo(s)`);
+
+    // Smart picks placeholder categories
+    const deletedSmartPicks = await this.smartpicksCategorieCollection.deleteMany({
+      key: { $in: ["todaysSpecial", "chefSpecial"] },
+      tagline: { $regex: "Tried and loved|Handpicked by our head chef" }
+    });
+    if (deletedSmartPicks.deletedCount > 0)
+      console.log(`[Storage] Removed ${deletedSmartPicks.deletedCount} placeholder smart pick(s)`);
+
+    // Offer tile images placeholder (Tarang/Cloudinary URLs)
+    const deletedOfferTiles = await this.offerTileImagesCollection.deleteMany({
+      $or: [
+        { cocktailsImageUrl: { $regex: "tarang-assets" } },
+        { mocktailsImageUrl: { $regex: "tarang-assets" } },
+      ]
+    });
+    if (deletedOfferTiles.deletedCount > 0)
+      console.log(`[Storage] Removed ${deletedOfferTiles.deletedCount} placeholder offer tile image(s)`);
+
+    // Placeholder categories (seeded food/bar/cocktails/etc with empty images)
+    // Only delete them if ALL images are empty strings (i.e. never been customized)
+    const placeholderCategoryIds = ["food", "crafted-beer", "cocktails", "bar", "desserts", "mocktails"];
+    const catsToCheck = await this.categoriesCollection.find({
+      id: { $in: placeholderCategoryIds },
+      image: ""
+    }).toArray();
+    if (catsToCheck.length > 0) {
+      const idsToDelete = catsToCheck.map((c: any) => c._id);
+      const deletedCats = await this.categoriesCollection.deleteMany({ _id: { $in: idsToDelete } });
+      if (deletedCats.deletedCount > 0)
+        console.log(`[Storage] Removed ${deletedCats.deletedCount} placeholder category document(s)`);
+    }
+    // --- End legacy cleanup ---
+
     // Ensure all defined collections exist
     const existingCollections = await this.db.listCollections().toArray();
     const existingNames = existingCollections.map(c => c.name);
@@ -232,25 +287,13 @@ export class MongoStorage implements IStorage {
       await this.menuPageDb.createCollection("carousel");
     }
 
-    const existingCarousel = await this.carouselCollection.countDocuments();
-    if (existingCarousel === 0) {
-      console.log(`[Storage] Seeding default carousel images into menupage.carousel`);
-      await this.carouselCollection.insertMany([
-        { url: "/carousel/promo1.jpg", alt: "Restaurant Interior", order: 1, visible: true },
-        { url: "/carousel/promo2.jpg", alt: "Bar & Dining Area", order: 2, visible: true },
-        { url: "/carousel/promo3.jpg", alt: "Modern Ambiance", order: 3, visible: true },
-        { url: "/carousel/promo4.jpg", alt: "Contemporary Dining", order: 4, visible: true },
-        { url: "/carousel/promo5.jpg", alt: "Elegant Seating", order: 5, visible: true },
-      ] as any[]);
-    } else {
-      // Migrate existing documents to add visible: true if they don't have the field
-      const migrated = await this.carouselCollection.updateMany(
-        { visible: { $exists: false } },
-        { $set: { visible: true } }
-      );
-      if (migrated.modifiedCount > 0) {
-        console.log(`[Storage] Migrated ${migrated.modifiedCount} carousel documents to add visible: true`);
-      }
+    // Migrate existing carousel documents to add visible: true if they don't have the field
+    const carouselMigrated = await this.carouselCollection.updateMany(
+      { visible: { $exists: false } },
+      { $set: { visible: true } }
+    );
+    if (carouselMigrated.modifiedCount > 0) {
+      console.log(`[Storage] Migrated ${carouselMigrated.modifiedCount} carousel documents to add visible: true`);
     }
 
     // Ensure menupage.logo collection exists and is seeded
@@ -259,182 +302,10 @@ export class MongoStorage implements IStorage {
       await this.menuPageDb.createCollection("logo");
     }
 
-    const existingLogo = await this.logoCollection.countDocuments();
-    if (existingLogo === 0) {
-      console.log(`[Storage] Seeding default logo into menupage.logo`);
-      await this.logoCollection.insertOne({
-        url: "https://atdigitalmenu.com/wp-content/uploads/2025/01/AT-Digital-Menu-logo-transparent.png",
-      } as any);
-    }
-
-    const existingCoupons = await this.couponsCollection.countDocuments();
-    if (existingCoupons === 0) {
-      console.log(`[Storage] Seeding default coupons into menupage.coupons`);
-      await this.couponsCollection.insertMany([
-        {
-          code: "BARREL20",
-          title: "20% OFF",
-          subtitle: "On your total bill",
-          description: "Valid on dine-in orders above ₹1000",
-          validity: "Valid till 31 Mar 2026",
-          tag: "LIMITED",
-          show: true,
-        },
-        {
-          code: "HAPPYHOUR",
-          title: "₹100 Off",
-          subtitle: "On all cocktails",
-          description: "Every weekday between 5 PM – 8 PM",
-          validity: "Valid till 30 Apr 2026",
-          tag: "HAPPY HOUR",
-          show: true,
-        },
-        {
-          code: "CRAFT15",
-          title: "15% OFF",
-          subtitle: "On craft beers",
-          description: "All draught & craft beer on tap",
-          validity: "Valid till 15 Apr 2026",
-          tag: "BEER LOVERS",
-          show: true,
-        },
-        {
-          code: "WELCOME50",
-          title: "₹50 OFF",
-          subtitle: "First visit discount",
-          description: "On your very first order at Barrelborn",
-          validity: "Single use only",
-          tag: "NEW GUEST",
-          show: true,
-        },
-        {
-          code: "WEEKEND25",
-          title: "25% OFF",
-          subtitle: "Weekend special",
-          description: "On food orders — Saturday & Sunday",
-          validity: "Every weekend",
-          tag: "WEEKEND",
-          show: true,
-        },
-      ] as any[]);
-    }
-
-    // Ensure menupage.categories collection exists and is seeded with defaults
+    // Ensure menupage.categories collection exists
     if (!menuPageExistingNames.includes("categories")) {
       console.log(`[Storage] Creating missing collection: categories in menupage`);
       await this.menuPageDb.createCollection("categories");
-    }
-
-    const existingCategories = await this.categoriesCollection.countDocuments();
-
-    if (existingCategories === 0) {
-      console.log(`[Storage] Seeding default categories into menupage.categories`);
-      await this.categoriesCollection.insertMany([
-        {
-          id: "food",
-          title: "FOOD",
-          image: "",
-          order: 1,
-          subcategories: [
-            { id: "nibbles", title: "Nibbles", image: "", subcategories: [] },
-            { id: "soups", title: "Soups", image: "", subcategories: [] },
-            { id: "titbits", title: "Titbits", image: "", subcategories: [] },
-            { id: "salads", title: "Salads", image: "", subcategories: [] },
-            { id: "mangalorean-style", title: "Mangalorean Style", image: "", subcategories: [] },
-            { id: "wok", title: "Wok", image: "", subcategories: [] },
-            { id: "charcoal", title: "Charcoal", image: "", subcategories: [] },
-            { id: "continental", title: "Continental", image: "", subcategories: [] },
-            { id: "pasta", title: "Pasta", image: "", subcategories: [] },
-            { id: "artisan-pizzas", title: "Artisan Pizzas", image: "", subcategories: [] },
-            { id: "mini-burger-sliders", title: "Mini Burger Sliders", image: "", subcategories: [] },
-            { id: "entree", title: "Entree (Main Course)", image: "", subcategories: [] },
-            { id: "bao-dimsum", title: "Bao & Dim Sum", image: "", subcategories: [] },
-            { id: "indian-mains-curries", title: "Indian Mains - Curries", image: "", subcategories: [] },
-            { id: "biryanis-rice", title: "Biryanis & Rice", image: "", subcategories: [] },
-            { id: "dals", title: "Dals", image: "", subcategories: [] },
-            { id: "breads", title: "Breads", image: "", subcategories: [] },
-            { id: "asian-mains", title: "Asian Mains", image: "", subcategories: [] },
-            { id: "rice-with-curry---thai-asian-bowls", title: "Rice with Curry - Thai & Asian Bowls", image: "", subcategories: [] },
-            { id: "rice-noodles", title: "Rice & Noodles", image: "", subcategories: [] },
-            { id: "sizzlers", title: "Sizzlers", image: "", subcategories: [] },
-          ],
-        },
-        {
-          id: "crafted-beer",
-          title: "CRAFT BEERS",
-          image: "",
-          order: 2,
-          subcategories: [
-            { id: "craft-beers-on-tap", title: "Craft Beers On Tap", image: "", subcategories: [] },
-            { id: "draught-beer", title: "Draught Beer", image: "", subcategories: [] },
-            { id: "pint-beers", title: "Pint Beers", image: "", subcategories: [] },
-          ],
-        },
-        {
-          id: "cocktails",
-          title: "COCKTAILS",
-          image: "",
-          order: 3,
-          subcategories: [
-            { id: "classic-cocktails", title: "Classic Cocktails", image: "", subcategories: [] },
-            { id: "signature-cocktails", title: "Signature Cocktails", image: "", subcategories: [] },
-            { id: "wine-cocktails", title: "Wine Cocktails", image: "", subcategories: [] },
-            { id: "sangria", title: "Sangria", image: "", subcategories: [] },
-            { id: "beer-cocktail", title: "Beer Cocktail", image: "", subcategories: [] },
-            { id: "signature-shots", title: "Signature Shots", image: "", subcategories: [] },
-          ],
-        },
-        {
-          id: "bar",
-          title: "BAR",
-          image: "",
-          order: 4,
-          subcategories: [
-            { id: "blended-whisky", title: "Blended Whisky", image: "", subcategories: [] },
-            { id: "blended-scotch-whisky", title: "Blended Scotch Whisky", image: "", subcategories: [] },
-            { id: "american-irish-whiskey", title: "American & Irish Whiskey", image: "", subcategories: [] },
-            { id: "single-malt-whisky", title: "Single Malt Whisky", image: "", subcategories: [] },
-            { id: "vodka", title: "Vodka", image: "", subcategories: [] },
-            { id: "gin", title: "Gin", image: "", subcategories: [] },
-            { id: "rum", title: "Rum", image: "", subcategories: [] },
-            { id: "tequila", title: "Tequila", image: "", subcategories: [] },
-            { id: "cognac-brandy", title: "Cognac & Brandy", image: "", subcategories: [] },
-            { id: "liqueurs", title: "Liqueurs", image: "", subcategories: [] },
-            {
-              id: "wine",
-              title: "Wine",
-              image: "",
-              subcategories: [
-                { id: "sparkling-wine", title: "Sparkling Wine", image: "", subcategories: [] },
-                { id: "white-wines", title: "White Wines", image: "", subcategories: [] },
-                { id: "rose-wines", title: "Rosé Wines", image: "", subcategories: [] },
-                { id: "red-wines", title: "Red Wines", image: "", subcategories: [] },
-                { id: "dessert-wines", title: "Dessert Wines", image: "", subcategories: [] },
-                { id: "port-wine", title: "Port Wine", image: "", subcategories: [] },
-              ],
-            },
-          ],
-        },
-        {
-          id: "desserts",
-          title: "DESSERTS",
-          image: "",
-          order: 5,
-          subcategories: [
-            { id: "desserts", title: "Desserts", image: "", subcategories: [] },
-          ],
-        },
-        {
-          id: "mocktails",
-          title: "MOCKTAILS",
-          image: "",
-          order: 6,
-          subcategories: [
-            { id: "signature-mocktails", title: "Signature Mocktails", image: "", subcategories: [] },
-            { id: "soft-beverages", title: "Soft Beverages", image: "", subcategories: [] },
-          ],
-        },
-      ] as any[]);
     }
 
     // Migrate all categories and their subcategories to add visible: true where missing
@@ -550,34 +421,16 @@ export class MongoStorage implements IStorage {
       await this.smartpicksDb.createCollection("smartpickscategorie");
     }
 
-    const existingSmartPicks = await this.smartpicksCategorieCollection.countDocuments();
-    if (existingSmartPicks === 0) {
-      console.log(`[Storage] Seeding default smart picks categories into smartpicks.smartpickscategorie`);
-      await this.smartpicksCategorieCollection.insertMany([
-        { key: "todaysSpecial", label: "Today's Special", icon: "star", tagline: "Tried and loved picks for today", order: 1, isVisible: true },
-        { key: "chefSpecial", label: "Chef's Special", icon: "chef-hat", tagline: "Handpicked by our head chef", order: 2, isVisible: true },
-      ] as any[]);
-    } else {
-      // Migrate existing documents: add isVisible: true if field is missing
-      await this.smartpicksCategorieCollection.updateMany(
-        { isVisible: { $exists: false } },
-        { $set: { isVisible: true } }
-      );
-    }
+    // Migrate existing smart picks documents: add isVisible: true if field is missing
+    await this.smartpicksCategorieCollection.updateMany(
+      { isVisible: { $exists: false } },
+      { $set: { isVisible: true } }
+    );
 
-    // Ensure menupage.offertileimages collection exists and is seeded
+    // Ensure menupage.offertileimages collection exists
     if (!menuPageExistingNames.includes("offertileimages")) {
       console.log(`[Storage] Creating missing collection: offertileimages in menupage`);
       await this.menuPageDb.createCollection("offertileimages");
-    }
-
-    const existingOfferTileImages = await this.offerTileImagesCollection.findOne({});
-    if (!existingOfferTileImages) {
-      console.log(`[Storage] Seeding default offer tile images into menupage.offertileimages`);
-      await this.offerTileImagesCollection.insertOne({
-        cocktailsImageUrl: "https://res.cloudinary.com/dui1jsojt/image/upload/v1778699287/tarang-assets/ai_cocktails_hero.png",
-        mocktailsImageUrl: "https://res.cloudinary.com/dui1jsojt/image/upload/v1778699287/tarang-assets/ai_mocktails_hero.png",
-      } as any);
     }
 
     // Sync smart picks flags on startup and watch for live changes
