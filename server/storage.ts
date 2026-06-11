@@ -103,7 +103,7 @@ export class MongoStorage implements IStorage {
 
   constructor(connectionString: string) {
     this.client = new MongoClient(connectionString);
-    this.db = this.client.db("barrelborn");
+    this.db = this.client.db("bungle");
     this.customersDb = this.client.db("customersdb");
     this.socialsDb = this.client.db("socialsandcontact");
     this.welcomeScreenDb = this.client.db("welcomescreen");
@@ -137,61 +137,6 @@ export class MongoStorage implements IStorage {
   async connect() {
     await this.client.connect();
 
-    // --- Remove legacy placeholder data seeded by earlier versions ---
-    // Coupons
-    const deletedCoupons = await this.couponsCollection.deleteMany({
-      code: { $in: ["BARREL20", "HAPPYHOUR", "CRAFT15", "WELCOME50", "WEEKEND25"] }
-    });
-    if (deletedCoupons.deletedCount > 0)
-      console.log(`[Storage] Removed ${deletedCoupons.deletedCount} placeholder coupon(s)`);
-
-    // Carousel placeholder images
-    const deletedCarousel = await this.carouselCollection.deleteMany({
-      url: { $regex: "^/carousel/promo" }
-    });
-    if (deletedCarousel.deletedCount > 0)
-      console.log(`[Storage] Removed ${deletedCarousel.deletedCount} placeholder carousel image(s)`);
-
-    // Logo placeholder (AT Digital Menu logo)
-    const deletedLogo = await this.logoCollection.deleteMany({
-      url: { $regex: "atdigitalmenu\\.com" }
-    });
-    if (deletedLogo.deletedCount > 0)
-      console.log(`[Storage] Removed ${deletedLogo.deletedCount} placeholder logo(s)`);
-
-    // Smart picks placeholder categories
-    const deletedSmartPicks = await this.smartpicksCategorieCollection.deleteMany({
-      key: { $in: ["todaysSpecial", "chefSpecial"] },
-      tagline: { $regex: "Tried and loved|Handpicked by our head chef" }
-    });
-    if (deletedSmartPicks.deletedCount > 0)
-      console.log(`[Storage] Removed ${deletedSmartPicks.deletedCount} placeholder smart pick(s)`);
-
-    // Offer tile images placeholder (Tarang/Cloudinary URLs)
-    const deletedOfferTiles = await this.offerTileImagesCollection.deleteMany({
-      $or: [
-        { cocktailsImageUrl: { $regex: "tarang-assets" } },
-        { mocktailsImageUrl: { $regex: "tarang-assets" } },
-      ]
-    });
-    if (deletedOfferTiles.deletedCount > 0)
-      console.log(`[Storage] Removed ${deletedOfferTiles.deletedCount} placeholder offer tile image(s)`);
-
-    // Placeholder categories (seeded food/bar/cocktails/etc with empty images)
-    // Only delete them if ALL images are empty strings (i.e. never been customized)
-    const placeholderCategoryIds = ["food", "crafted-beer", "cocktails", "bar", "desserts", "mocktails"];
-    const catsToCheck = await this.categoriesCollection.find({
-      id: { $in: placeholderCategoryIds },
-      image: ""
-    }).toArray();
-    if (catsToCheck.length > 0) {
-      const idsToDelete = catsToCheck.map((c: any) => c._id);
-      const deletedCats = await this.categoriesCollection.deleteMany({ _id: { $in: idsToDelete } });
-      if (deletedCats.deletedCount > 0)
-        console.log(`[Storage] Removed ${deletedCats.deletedCount} placeholder category document(s)`);
-    }
-    // --- End legacy cleanup ---
-
     // Ensure all defined collections exist
     const existingCollections = await this.db.listCollections().toArray();
     const existingNames = existingCollections.map(c => c.name);
@@ -211,7 +156,7 @@ export class MongoStorage implements IStorage {
       await this.customersDb.createCollection("customers");
     }
 
-    // Ensure socialsandcontact.link collection exists and has a seed document
+    // Ensure socialsandcontact.link collection exists
     const socialsCollections = await this.socialsDb.listCollections().toArray();
     const socialsExistingNames = socialsCollections.map(c => c.name);
 
@@ -220,41 +165,7 @@ export class MongoStorage implements IStorage {
       await this.socialsDb.createCollection("link");
     }
 
-    const existingLinks = await this.linksCollection.findOne({});
-    if (!existingLinks) {
-      console.log(`[Storage] Seeding default social links document`);
-      await this.linksCollection.insertOne({
-        instagram: "https://www.instagram.com/",
-        facebook: "https://www.facebook.com/",
-        youtube: "https://youtube.com",
-        googleReview: "https://g.page/r/",
-        locate: "https://maps.google.com",
-        call: "tel:+91",
-        whatsapp: "https://wa.me/91",
-        email: "mailto:info@bungle.com",
-        website: "https://www.bungle.com",
-      } as any);
-    } else if ((existingLinks as any).instagram?.includes("tarang") || (existingLinks as any).email?.includes("tarang")) {
-      console.log(`[Storage] Migrating social links from Tarang to Bung-le branding`);
-      await this.linksCollection.updateOne(
-        { _id: existingLinks._id },
-        {
-          $set: {
-            instagram: "https://www.instagram.com/",
-            facebook: "https://www.facebook.com/",
-            youtube: "https://youtube.com",
-            googleReview: "https://g.page/r/",
-            locate: "https://maps.google.com",
-            call: "tel:+91",
-            whatsapp: "https://wa.me/91",
-            email: "mailto:info@bungle.com",
-            website: "https://www.bungle.com",
-          }
-        }
-      );
-    }
-
-    // Ensure welcomescreen.welcomescreenui collection exists with seed document
+    // Ensure welcomescreen.welcomescreenui collection exists
     const welcomeCollections = await this.welcomeScreenDb.listCollections().toArray();
     const welcomeExistingNames = welcomeCollections.map(c => c.name);
 
@@ -263,16 +174,7 @@ export class MongoStorage implements IStorage {
       await this.welcomeScreenDb.createCollection("welcomescreenui");
     }
 
-    const existingWelcomeUI = await this.welcomeScreenUiCollection.findOne({});
-    if (!existingWelcomeUI) {
-      console.log(`[Storage] Seeding default welcomescreenui document`);
-      await this.welcomeScreenUiCollection.insertOne({
-        logoUrl: "",
-        buttonText: "EXPLORE OUR MENU",
-      } as any);
-    }
-
-    // Ensure menupage.coupons collection exists and is seeded
+    // Ensure menupage.coupons collection exists
     const menuPageCollections = await this.menuPageDb.listCollections().toArray();
     const menuPageExistingNames = menuPageCollections.map(c => c.name);
 
@@ -331,16 +233,10 @@ export class MongoStorage implements IStorage {
       }
     }
 
-    // Ensure menupage.callwaiter collection exists and is seeded
+    // Ensure menupage.callwaiter collection exists
     if (!menuPageExistingNames.includes("callwaiter")) {
       console.log(`[Storage] Creating missing collection: callwaiter in menupage`);
       await this.menuPageDb.createCollection("callwaiter");
-    }
-
-    const existingCallWaiter = await this.callWaiterCollection.findOne({});
-    if (!existingCallWaiter) {
-      console.log(`[Storage] Seeding default callwaiter document into menupage.callwaiter`);
-      await this.callWaiterCollection.insertOne({ called: false } as any);
     }
 
     // Ensure hamburger.reservation and hamburger.paymentdetails collections exist
@@ -357,62 +253,13 @@ export class MongoStorage implements IStorage {
       await this.hamburgerDb.createCollection("paymentdetails");
     }
 
-    const existingPaymentDetails = await this.paymentDetailsCollection.findOne({});
-    if (!existingPaymentDetails) {
-      console.log(`[Storage] Seeding default payment details into hamburger.paymentdetails`);
-      await this.paymentDetailsCollection.insertOne({ upiId: "atdigitalmenu@upi" } as any);
-    }
-
-    // Ensure hamburger.restaurantinfo collection exists and is seeded
+    // Ensure hamburger.restaurantinfo collection exists
     if (!hamburgerExistingNames.includes("restaurantinfo")) {
       console.log(`[Storage] Creating missing collection: restaurantinfo in hamburger`);
       await this.hamburgerDb.createCollection("restaurantinfo");
     }
 
-    const existingRestaurantInfo = await this.restaurantInfoCollection.findOne({});
-    if (!existingRestaurantInfo) {
-      console.log(`[Storage] Seeding default restaurantinfo into hamburger.restaurantinfo`);
-      await this.restaurantInfoCollection.insertOne({
-        location:  { name: "Bung-le", subtext: "Open in Google Maps",               show: true, linkKey: "locate"    },
-        contact:   { name: "+91 XXXXXXXXXX", subtext: "For Reservations and Orders", show: true, linkKey: "call"      },
-        hours:     { name: "11.30 AM - 11.30 PM", subtext: "Open All Days",          show: true                       },
-        instagram: { name: "@bungle", subtext: "Follow Us for Updates",              show: true, linkKey: "instagram"  },
-        facebook:  { name: "Bung-le", subtext: "Follow on Facebook",                show: true, linkKey: "facebook"   },
-        youtube:   { name: "Bung-le", subtext: "Watch on YouTube",                  show: true, linkKey: "youtube"    },
-        whatsapp:  { name: "+91 XXXXXXXXXX", subtext: "Chat on WhatsApp",            show: true, linkKey: "whatsapp"  },
-      } as any);
-    } else if ((existingRestaurantInfo as any).location?.name?.includes("Tarang") || (existingRestaurantInfo as any).instagram?.name?.includes("tarang")) {
-      console.log(`[Storage] Migrating restaurantinfo from Tarang to Bung-le branding`);
-      await this.restaurantInfoCollection.updateOne(
-        { _id: existingRestaurantInfo._id },
-        {
-          $set: {
-            "location.name": "Bung-le",
-            "instagram.name": "@bungle",
-            "facebook.name": "Bung-le",
-            "youtube.name": "Bung-le",
-          }
-        }
-      );
-    } else if (existingRestaurantInfo.location && typeof (existingRestaurantInfo.location as any).show === 'undefined') {
-      console.log(`[Storage] Migrating restaurantinfo to add show/linkKey fields`);
-      await this.restaurantInfoCollection.updateOne(
-        { _id: existingRestaurantInfo._id },
-        {
-          $set: {
-            "location.show": true,  "location.linkKey": "locate",
-            "contact.show": true,   "contact.linkKey": "call",
-            "hours.show": true,
-            "instagram.show": true, "instagram.linkKey": "instagram",
-            "facebook.show": true,  "facebook.linkKey": "facebook",
-            "youtube.show": true,   "youtube.linkKey": "youtube",
-            "whatsapp.show": true,  "whatsapp.linkKey": "whatsapp",
-          }
-        }
-      );
-    }
-
-    // Ensure smartpicks.smartpickscategorie collection exists and is seeded
+    // Ensure smartpicks.smartpickscategorie collection exists
     const smartpicksCollections = await this.smartpicksDb.listCollections().toArray();
     const smartpicksExistingNames = smartpicksCollections.map(c => c.name);
 
@@ -674,12 +521,12 @@ export class MongoStorage implements IStorage {
   async getMenuItemsByCategory(category: string): Promise<MenuItem[]> {
     console.log(`[Storage] Fetching items for category: ${category}`);
     try {
-      // 1. Check current DB ('barrelborn') for a direct collection match
+      // 1. Check current DB ('bungle') for a direct collection match
       let collection = this.db.collection(category) as Collection<MenuItem>;
       let items = await collection.find({}).toArray();
       
       if (items.length > 0) {
-        console.log(`[Storage] Found ${items.length} items in barrelborn.${category}`);
+        console.log(`[Storage] Found ${items.length} items in bungle.${category}`);
         return this.sortMenuItems(items.map(item => ({ ...item, category })));
       }
 
@@ -698,12 +545,12 @@ export class MongoStorage implements IStorage {
         const variantColl = this.db.collection(variant) as Collection<MenuItem>;
         const variantItems = await variantColl.find({}).toArray();
         if (variantItems.length > 0) {
-          console.log(`[Storage] Found ${variantItems.length} items in barrelborn collection variation: ${variant}`);
+          console.log(`[Storage] Found ${variantItems.length} items in bungle collection variation: ${variant}`);
           return this.sortMenuItems(variantItems.map(item => ({ ...item, category: variant })));
         }
       }
 
-      // 2. Last-ditch search: Look for items with the category in THEIR name or description across barrelborn collections
+      // 2. Last-ditch search: Look for items with the category in THEIR name or description across bungle collections
       const dbCollections = await this.db.listCollections().toArray();
       const allMatches: MenuItem[] = [];
       for (const collInfo of dbCollections) {
