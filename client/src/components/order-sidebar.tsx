@@ -1,7 +1,7 @@
 import { useOrder } from "@/contexts/OrderContext";
 import { useCustomer } from "@/contexts/CustomerContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Minus, Plus, ShoppingBag, Trash2, CheckCircle, User, ChevronDown, ChevronUp, Clock } from "lucide-react";
+import { X, Minus, Plus, ShoppingBag, Trash2, CheckCircle, User, ChevronDown, ChevronUp, Clock, UtensilsCrossed } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useQuery } from "@tanstack/react-query";
@@ -112,22 +112,68 @@ export default function OrderSidebar() {
             }}
           >
             {/* Header */}
-            <div
-              className="flex items-center justify-between px-5 py-4"
-              style={{ borderBottom: "1px solid var(--bb-border)" }}
-            >
-              <div className="flex items-center gap-2">
-                <ShoppingBag size={20} style={{ color: "var(--bb-gold)" }} />
-                <span
-                  className="text-lg font-bold uppercase tracking-wider"
-                  style={{ color: "var(--bb-gold)", fontFamily: "'DM Sans', sans-serif" }}
-                >
-                  Your Order
-                </span>
+            <div style={{ borderBottom: "1px solid var(--bb-border)" }}>
+              {/* Title row */}
+              <div className="flex items-center justify-between px-5 py-3">
+                <div className="flex items-center gap-2">
+                  <ShoppingBag size={20} style={{ color: "var(--bb-gold)" }} />
+                  <span
+                    className="text-lg font-bold uppercase tracking-wider"
+                    style={{ color: "var(--bb-gold)", fontFamily: "'DM Sans', sans-serif" }}
+                  >
+                    Your Order
+                  </span>
+                </div>
+                <button onClick={closeSidebar} style={{ color: "var(--bb-text-dim)" }}>
+                  <X size={22} />
+                </button>
               </div>
-              <button onClick={closeSidebar} style={{ color: "var(--bb-text-dim)" }}>
-                <X size={22} />
-              </button>
+
+              {/* Table + order summary strip */}
+              <div
+                className="mx-4 mb-3 rounded-xl px-4 py-2.5 flex items-center justify-between gap-3"
+                style={{
+                  background: isDark ? "#1a1a1a" : "#fff8ee",
+                  border: "1px solid var(--bb-gold)",
+                }}
+              >
+                {/* Table badge */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <UtensilsCrossed size={15} style={{ color: "var(--bb-gold)" }} />
+                  <span
+                    className="text-sm font-bold uppercase tracking-widest"
+                    style={{ color: "var(--bb-gold)", fontFamily: "'DM Sans', sans-serif" }}
+                  >
+                    Table 1
+                  </span>
+                </div>
+
+                {/* Divider */}
+                <div style={{ width: 1, height: 28, background: "var(--bb-border)", flexShrink: 0 }} />
+
+                {/* Current order summary */}
+                {orderItems.length === 0 ? (
+                  <span className="text-xs flex-1 text-right" style={{ color: "var(--bb-text-dim)" }}>
+                    No items yet
+                  </span>
+                ) : (
+                  <div className="flex-1 min-w-0 text-right">
+                    <p
+                      className="text-xs truncate"
+                      style={{ color: "var(--bb-text)", fontFamily: "'DM Sans', sans-serif" }}
+                      title={orderItems.map(l => `${l.item.name} ×${l.quantity}`).join(", ")}
+                    >
+                      {orderItems.map(l => `${l.item.name} ×${l.quantity}`).join(", ")}
+                    </p>
+                    <p
+                      className="text-sm font-bold mt-0.5"
+                      style={{ color: "var(--bb-gold)", fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      ₹{total.toFixed(0)} · {orderItems.reduce((s, l) => s + l.quantity, 0)} item{orderItems.reduce((s, l) => s + l.quantity, 0) !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Customer Profile */}
