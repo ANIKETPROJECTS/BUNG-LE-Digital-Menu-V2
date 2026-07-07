@@ -33,6 +33,8 @@ export default function OrderSidebar() {
       return res.json();
     },
     enabled: !!customer?.phone && profileOpen,
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   const total = orderItems.reduce((sum, l) => sum + parsePrice(l.item.price) * l.quantity, 0);
