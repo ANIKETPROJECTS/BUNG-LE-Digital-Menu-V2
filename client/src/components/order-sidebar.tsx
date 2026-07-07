@@ -227,23 +227,74 @@ export default function OrderSidebar() {
                       transition={{ duration: 0.2 }}
                       style={{ overflow: "hidden" }}
                     >
-                      <div className="px-5 pb-3 space-y-2">
-                        <p
-                          className="text-xs font-semibold uppercase tracking-wider mb-2"
-                          style={{ color: "var(--bb-text-dim)" }}
-                        >
-                          Previous Orders
-                        </p>
-                        {pastOrders.length === 0 ? (
-                          <p className="text-xs" style={{ color: "var(--bb-text-dim)" }}>
-                            No previous orders yet.
+                      <div className="px-5 pb-3 space-y-3">
+
+                        {/* ── Ongoing orders (pending / in-progress) ── */}
+                        {(() => {
+                          const ongoing = pastOrders.filter(o => o.status !== "completed" && o.status !== "cancelled");
+                          if (ongoing.length === 0) return null;
+                          return (
+                            <div className="space-y-2">
+                              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#E49B1D" }}>
+                                Ongoing Orders
+                              </p>
+                              {ongoing.map(order => (
+                                <div
+                                  key={order._id?.toString()}
+                                  className="rounded-lg p-3 space-y-2"
+                                  style={{
+                                    background: isDark ? "#1a1a1a" : "#fff",
+                                    border: "1.5px solid #E49B1D",
+                                  }}
+                                >
+                                  {/* Header: time + status + total */}
+                                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                                    <div className="flex items-center gap-1.5">
+                                      <Clock size={11} style={{ color: "var(--bb-text-dim)", flexShrink: 0 }} />
+                                      <span className="text-xs" style={{ color: "var(--bb-text-dim)" }}>
+                                        {new Date(order.createdAt).toLocaleDateString("en-IN", {
+                                          day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
+                                        })}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full" style={{ background: "#E49B1D22", color: "#E49B1D" }}>
+                                        {order.status}
+                                      </span>
+                                      <span className="text-xs font-bold" style={{ color: "var(--bb-gold)" }}>₹{order.total}</span>
+                                    </div>
+                                  </div>
+                                  {/* Items — each on its own line, no cropping */}
+                                  <div className="space-y-1 pt-1" style={{ borderTop: "1px solid var(--bb-border)" }}>
+                                    {order.items.map((item, idx) => (
+                                      <div key={idx} className="flex items-start justify-between gap-3 text-xs">
+                                        <span style={{ color: "var(--bb-text)", wordBreak: "break-word", flex: 1 }}>{item.name}</span>
+                                        <span className="flex-shrink-0 font-semibold" style={{ color: "var(--bb-gold)" }}>×{item.quantity}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  {/* Table */}
+                                  <p className="text-xs" style={{ color: "var(--bb-text-dim)" }}>
+                                    Table: <span className="font-semibold" style={{ color: "var(--bb-gold)" }}>{order.tableId}</span>
+                                  </p>
+                                  {order.note && (
+                                    <p className="text-xs italic" style={{ color: "var(--bb-text-dim)" }}>Note: {order.note}</p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
+
+                        {/* ── Previous completed orders ── */}
+                        <div className="space-y-2">
+                          <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--bb-text-dim)" }}>
+                            Previous Orders
                           </p>
-                        ) : (
-                          pastOrders.slice(0, 5).map(order => {
-                            const statusColor =
-                              order.status === "completed" ? "#22c55e" :
-                              order.status === "cancelled" ? "#ef4444" : "#E49B1D";
-                            return (
+                          {pastOrders.filter(o => o.status === "completed").length === 0 ? (
+                            <p className="text-xs" style={{ color: "var(--bb-text-dim)" }}>No completed orders yet.</p>
+                          ) : (
+                            pastOrders.filter(o => o.status === "completed").slice(0, 5).map(order => (
                               <div
                                 key={order._id?.toString()}
                                 className="rounded-lg p-2.5 space-y-1"
@@ -253,38 +304,27 @@ export default function OrderSidebar() {
                                 }}
                               >
                                 <div className="flex items-center justify-between gap-2">
-                                  <div className="flex items-center gap-1.5 min-w-0">
+                                  <div className="flex items-center gap-1.5">
                                     <Clock size={11} style={{ color: "var(--bb-text-dim)", flexShrink: 0 }} />
-                                    <span className="text-xs truncate" style={{ color: "var(--bb-text-dim)" }}>
+                                    <span className="text-xs" style={{ color: "var(--bb-text-dim)" }}>
                                       {new Date(order.createdAt).toLocaleDateString("en-IN", {
                                         day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
                                       })}
                                     </span>
                                   </div>
-                                  <div className="flex items-center gap-1.5 flex-shrink-0">
-                                    <span
-                                      className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full"
-                                      style={{ background: statusColor + "22", color: statusColor }}
-                                    >
-                                      {order.status}
-                                    </span>
-                                    <span className="text-xs font-bold" style={{ color: "var(--bb-gold)" }}>
-                                      ₹{order.total}
-                                    </span>
-                                  </div>
+                                  <span className="text-xs font-bold" style={{ color: "var(--bb-gold)" }}>₹{order.total}</span>
                                 </div>
                                 <p className="text-xs" style={{ color: "var(--bb-text)", wordBreak: "break-word" }}>
                                   {order.items.map(i => i.name).join(", ")}
                                 </p>
                                 {order.note && (
-                                  <p className="text-xs italic" style={{ color: "var(--bb-text-dim)" }}>
-                                    Note: {order.note}
-                                  </p>
+                                  <p className="text-xs italic" style={{ color: "var(--bb-text-dim)" }}>Note: {order.note}</p>
                                 )}
                               </div>
-                            );
-                          })
-                        )}
+                            ))
+                          )}
+                        </div>
+
                       </div>
                     </motion.div>
                   )}
