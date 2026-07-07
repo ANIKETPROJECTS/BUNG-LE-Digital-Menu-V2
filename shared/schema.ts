@@ -220,3 +220,39 @@ export interface OfferTileImages {
   cocktailsImageUrl: string;
   mocktailsImageUrl: string;
 }
+
+// Order types
+export interface OrderItem {
+  name: string;
+  price: string | number;
+  quantity: number;
+  category: string;
+}
+
+export interface Order {
+  _id: ObjectId;
+  tableId: string;
+  items: OrderItem[];
+  total: number;
+  status: "pending" | "confirmed" | "completed";
+  createdAt: Date;
+}
+
+export interface InsertOrder {
+  tableId: string;
+  items: OrderItem[];
+  total: number;
+  status: "pending" | "confirmed" | "completed";
+}
+
+export const insertOrderSchema = z.object({
+  tableId: z.string().default("Table1"),
+  items: z.array(z.object({
+    name: z.string(),
+    price: z.union([z.number(), z.string()]),
+    quantity: z.number().positive(),
+    category: z.string(),
+  })).min(1),
+  total: z.number().nonnegative(),
+  status: z.enum(["pending", "confirmed", "completed"]).default("pending"),
+});

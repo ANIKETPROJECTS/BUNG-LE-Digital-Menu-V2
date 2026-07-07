@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { OrderProvider } from "@/contexts/OrderContext";
+import OrderSidebar from "@/components/order-sidebar";
 import Welcome from "@/pages/welcome";
 import MenuLanding from "@/pages/menu-landing";
 import CategorySelection from "@/pages/category-selection";
@@ -34,10 +36,13 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <LanguageProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
+          <OrderProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Router />
+              <OrderSidebar />
+            </TooltipProvider>
+          </OrderProvider>
         </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>

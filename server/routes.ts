@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertCartItemSchema, insertCustomerSchema, updateMenuItemFlagsSchema, insertReservationSchema } from "@shared/schema";
+import { insertCartItemSchema, insertCustomerSchema, updateMenuItemFlagsSchema, insertReservationSchema, insertOrderSchema } from "@shared/schema";
 
 function getAdminToken() {
   return process.env.ADMIN_API_TOKEN || (process.env.NODE_ENV !== "production" ? "admin123" : "");
@@ -394,6 +394,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fix veg classification" });
+    }
+  });
+
+  // Orders routes
+  app.post("/api/orders", async (req, res) => {
+    try {
+      const validated = insertOrderSchema.parse(req.body);
+      const order = await storage.createOrder(validated);
+      res.status(201).json(order);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid order data" });
+    }
+  });
+
+  app.get("/api/orders", async (req, res) => {
+    try {
+      const orders = await storage.getOrders();
+      res.json(orders);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch orders" });
     }
   });
 

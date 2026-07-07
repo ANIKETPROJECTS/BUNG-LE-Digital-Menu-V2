@@ -1,5 +1,5 @@
 import { MongoClient, Db, Collection, ObjectId } from "mongodb";
-import { type User, type InsertUser, type MenuItem, type InsertMenuItem, type CartItem, type InsertCartItem, type Customer, type InsertCustomer, type SocialLinks, type WelcomeScreenUI, type Coupon, type CarouselImage, type Logo, type MenuCategory, type MenuSubCategory, type Reservation, type InsertReservation, type PaymentDetails, type CallWaiter, type RestaurantInfo, type SmartPicksCategory, type OfferTileImages } from "@shared/schema";
+import { type User, type InsertUser, type MenuItem, type InsertMenuItem, type CartItem, type InsertCartItem, type Customer, type InsertCustomer, type SocialLinks, type WelcomeScreenUI, type Coupon, type CarouselImage, type Logo, type MenuCategory, type MenuSubCategory, type Reservation, type InsertReservation, type PaymentDetails, type CallWaiter, type RestaurantInfo, type SmartPicksCategory, type OfferTileImages, type Order, type InsertOrder } from "@shared/schema";
 
 type UpdateMenuItemFlags = {
   todaysSpecial?: boolean;
@@ -55,6 +55,9 @@ export interface IStorage {
 
   getOfferTileImages(): Promise<OfferTileImages | null>;
   updateOfferTileImages(data: Partial<Omit<OfferTileImages, '_id'>>): Promise<OfferTileImages | null>;
+
+  createOrder(order: InsertOrder): Promise<Order>;
+  getOrders(): Promise<Order[]>;
 }
 
 export class MongoStorage implements IStorage {
@@ -82,6 +85,8 @@ export class MongoStorage implements IStorage {
   private smartpicksDb: Db;
   private smartpicksCategorieCollection: Collection<SmartPicksCategory>;
   private offerTileImagesCollection: Collection<OfferTileImages>;
+  private ordersDb: Db;
+  private ordersCollection: Collection<Order>;
   private restaurantId: ObjectId;
 
   private readonly categories = [
@@ -134,6 +139,8 @@ export class MongoStorage implements IStorage {
     this.smartpicksDb = this.client.db("smartpicks");
     this.smartpicksCategorieCollection = this.smartpicksDb.collection<SmartPicksCategory>("smartpickscategorie");
     this.offerTileImagesCollection = this.menuPageDb.collection<OfferTileImages>("offertileimages");
+    this.ordersDb = this.client.db("Orders");
+    this.ordersCollection = this.ordersDb.collection<Order>("orders");
     this.restaurantId = new ObjectId("6874cff2a880250859286de6");
   }
 
@@ -281,6 +288,14 @@ export class MongoStorage implements IStorage {
     if (!menuPageExistingNames.includes("offertileimages")) {
       console.log(`[Storage] Creating missing collection: offertileimages in menupage`);
       await this.menuPageDb.createCollection("offertileimages");
+    }
+
+    // Ensure Orders.orders collection exists
+    const ordersCollections = await this.ordersDb.listCollections().toArray();
+    const ordersExistingNames = ordersCollections.map(c => c.name);
+    if (!ordersExistingNames.includes("orders")) {
+      console.log(`[Storage] Creating missing collection: orders in Orders`);
+      await this.ordersDb.createCollection("orders");
     }
 
     // Sync smart picks flags on startup and watch for live changes
@@ -682,6 +697,17 @@ export class MongoStorage implements IStorage {
     }
     const result = await this.callWaiterCollection.insertOne({ called } as any);
     return { _id: result.insertedId, called } as any;
+  }
+
+  async createOrder(order: InsertOrder): Promise<Order> {
+    const now = new Date();
+    const doc = { ...order, createdAt: now };
+    const result = await this.ordersCollection.insertOne(doc as any);
+    return { _id: result.insertedId, ...doc } as any;
+  }
+
+  async getOrders(): Promise<Order[]> {
+    return await this.ordersCollection.find({}).sort({ createdAt: -1 }).toArray();
   }
 
   async clearDatabase(): Promise<void> {

@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { Plus } from "lucide-react";
 import type { MenuItem } from "@shared/schema";
+import { useOrder } from "@/contexts/OrderContext";
 
 const fallbackImg = "https://res.cloudinary.com/dui1jsojt/image/upload/v1777092683/tarang-assets/coming_soon_imagev2_1766811809828.jpg";
 const soupManchowImg = "https://res.cloudinary.com/dui1jsojt/image/upload/v1777093033/tarang-assets/image_1776791999539.png";
@@ -127,6 +129,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ item, onClick }: ProductCardProps) {
   const [imgError, setImgError] = useState(false);
+  const { addToOrder } = useOrder();
   const override = getOverrideImage(item.name);
   const isBrokenImage = imgError || !item.image ||
     item.image.includes("example.com") ||
@@ -198,10 +201,10 @@ export default function ProductCard({ item, onClick }: ProductCardProps) {
           {item.description || "No description available"}
         </p>
 
-        {/* Price */}
-        <div className="pt-2" style={{ borderTop: "1px solid var(--bb-border)" }}>
+        {/* Price + Add button */}
+        <div className="pt-2 flex items-center justify-between" style={{ borderTop: "1px solid var(--bb-border)" }}>
           <span
-            className="text-sm sm:text-base font-bold block tracking-wide"
+            className="text-sm sm:text-base font-bold tracking-wide"
             style={{
               color: "var(--bb-gold-2)",
               fontFamily: "'DM Sans', sans-serif",
@@ -212,6 +215,23 @@ export default function ProductCard({ item, onClick }: ProductCardProps) {
               ? item.price.split("|").map(p => `₹${p.trim()}`).join(" | ")
               : `₹${item.price}`}
           </span>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              addToOrder(item);
+            }}
+            className="flex items-center justify-center rounded-full transition-transform active:scale-90"
+            style={{
+              width: "28px",
+              height: "28px",
+              background: "var(--bb-gold)",
+              color: "#fff",
+              flexShrink: 0,
+            }}
+            aria-label={`Add ${item.name} to order`}
+          >
+            <Plus size={15} strokeWidth={2.5} />
+          </button>
         </div>
       </div>
     </div>
