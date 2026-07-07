@@ -236,6 +236,8 @@ export interface Order {
   total: number;
   status: "pending" | "confirmed" | "completed";
   note?: string;
+  customerName?: string;
+  customerPhone?: string;
   createdAt: Date;
 }
 
@@ -245,6 +247,8 @@ export interface InsertOrder {
   total: number;
   status: "pending" | "confirmed" | "completed";
   note?: string;
+  customerName?: string;
+  customerPhone?: string;
 }
 
 export const insertOrderSchema = z.object({
@@ -258,4 +262,6 @@ export const insertOrderSchema = z.object({
   total: z.number().nonnegative(),
   status: z.enum(["pending", "confirmed", "completed"]).default("pending"),
   note: z.string().optional(),
+  customerName: z.string().optional(),
+  customerPhone: z.string().optional(),
 });

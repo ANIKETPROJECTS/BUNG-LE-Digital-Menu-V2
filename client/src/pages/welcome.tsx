@@ -9,6 +9,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import LanguageDropdown from "@/components/language-dropdown";
 import { motion } from "framer-motion";
+import { useCustomer } from "@/contexts/CustomerContext";
 const atDigitalMenuLogo = "/bungle-logo.svg";
 const instaImg = "https://res.cloudinary.com/dui1jsojt/image/upload/v1777093081/tarang-assets/instagram__2__1773345405292.png";
 const fbImg = "https://res.cloudinary.com/dui1jsojt/image/upload/v1777092684/tarang-assets/facebook__2__1773345408410.png";
@@ -301,11 +302,15 @@ export default function Welcome() {
   const welcomeUI: WelcomeScreenUI = welcomeUIData ?? DEFAULT_WELCOME_UI;
   const logoSrc = welcomeUI.logoUrl && welcomeUI.logoUrl.trim() !== "" ? welcomeUI.logoUrl : atDigitalMenuLogo;
 
+  const { setCustomer } = useCustomer();
+
   const handleExploreMenu = () => {
     setShowCustomerForm(true);
   };
 
   const handleCustomerSubmit = async (name: string, phone: string) => {
+    // Save to context (persisted in localStorage)
+    setCustomer({ name, phone });
     try {
       await fetch("/api/customers", {
         method: "POST",

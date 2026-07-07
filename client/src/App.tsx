@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { OrderProvider } from "@/contexts/OrderContext";
+import { CustomerProvider } from "@/contexts/CustomerContext";
 import OrderSidebar from "@/components/order-sidebar";
 import Welcome from "@/pages/welcome";
 import MenuLanding from "@/pages/menu-landing";
@@ -36,6 +37,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <LanguageProvider>
+          <CustomerProvider>
           <OrderProvider>
             <TooltipProvider>
               <Toaster />
@@ -43,6 +45,7 @@ function App() {
               <OrderSidebar />
             </TooltipProvider>
           </OrderProvider>
+          </CustomerProvider>
         </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>

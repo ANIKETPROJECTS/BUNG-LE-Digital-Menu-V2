@@ -1,8 +1,11 @@
 import { useOrder } from "@/contexts/OrderContext";
+import { useCustomer } from "@/contexts/CustomerContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Minus, Plus, ShoppingBag, Trash2, CheckCircle } from "lucide-react";
+import { X, Minus, Plus, ShoppingBag, Trash2, CheckCircle, User, ChevronDown, ChevronUp, Clock } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useQuery } from "@tanstack/react-query";
+import type { Order } from "@shared/schema";
 
 function parsePrice(price: string | number): number {
   if (typeof price === "number") return price;
@@ -13,10 +16,24 @@ function parsePrice(price: string | number): number {
 
 export default function OrderSidebar() {
   const { orderItems, removeFromOrder, updateQuantity, clearOrder, isOpen, closeSidebar } = useOrder();
+  const { customer } = useCustomer();
   const { isDark } = useTheme();
   const [placing, setPlacing] = useState(false);
   const [placed, setPlaced] = useState(false);
   const [note, setNote] = useState("");
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  // Fetch past orders for this customer
+  const { data: pastOrders = [] } = useQuery<Order[]>({
+    queryKey: ["/api/orders/by-phone", customer?.phone],
+    queryFn: async () => {
+      if (!customer?.phone) return [];
+      const res = await fetch(`/api/orders/by-phone/${customer.phone}`);
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: !!customer?.phone && profileOpen,
+  });
 
   const total = orderItems.reduce((sum, l) => sum + parsePrice(l.item.price) * l.quantity, 0);
 
@@ -35,6 +52,7 @@ export default function OrderSidebar() {
         total,
         status: "pending",
         ...(note.trim() ? { note: note.trim() } : {}),
+        ...(customer ? { customerName: customer.name, customerPhone: customer.phone } : {}),
       };
       const res = await fetch("/api/orders", {
         method: "POST",
@@ -107,6 +125,107 @@ export default function OrderSidebar() {
                 <X size={22} />
               </button>
             </div>
+
+            {/* Customer Profile */}
+            {customer && (
+              <div
+                style={{
+                  borderBottom: "1px solid var(--bb-border)",
+                  background: isDark ? "#141414" : "#f9f4ea",
+                }}
+              >
+                <button
+                  onClick={() => setProfileOpen(o => !o)}
+                  className="w-full flex items-center gap-3 px-5 py-3"
+                >
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{ background: "var(--bb-gold)" }}
+                  >
+                    <User size={15} color="#fff" />
+                  </div>
+                  <div className="flex-1 text-left min-w-0">
+                    <p
+                      className="text-sm font-bold truncate"
+                      style={{ color: "var(--bb-gold)", fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      {customer.name}
+                    </p>
+                    <p className="text-xs" style={{ color: "var(--bb-text-dim)" }}>
+                      {customer.phone}
+                    </p>
+                  </div>
+                  {profileOpen ? (
+                    <ChevronUp size={16} style={{ color: "var(--bb-text-dim)" }} />
+                  ) : (
+                    <ChevronDown size={16} style={{ color: "var(--bb-text-dim)" }} />
+                  )}
+                </button>
+
+                {/* Past orders panel */}
+                <AnimatePresence>
+                  {profileOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      style={{ overflow: "hidden" }}
+                    >
+                      <div className="px-5 pb-3 space-y-2">
+                        <p
+                          className="text-xs font-semibold uppercase tracking-wider mb-2"
+                          style={{ color: "var(--bb-text-dim)" }}
+                        >
+                          Previous Orders
+                        </p>
+                        {pastOrders.length === 0 ? (
+                          <p className="text-xs" style={{ color: "var(--bb-text-dim)" }}>
+                            No previous orders yet.
+                          </p>
+                        ) : (
+                          pastOrders.slice(0, 5).map(order => (
+                            <div
+                              key={order._id?.toString()}
+                              className="rounded-lg p-2.5 space-y-1"
+                              style={{
+                                background: isDark ? "#1a1a1a" : "#fff",
+                                border: "1px solid var(--bb-border)",
+                              }}
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-1.5">
+                                  <Clock size={11} style={{ color: "var(--bb-text-dim)" }} />
+                                  <span className="text-xs" style={{ color: "var(--bb-text-dim)" }}>
+                                    {new Date(order.createdAt).toLocaleDateString("en-IN", {
+                                      day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
+                                    })}
+                                  </span>
+                                </div>
+                                <span
+                                  className="text-xs font-bold"
+                                  style={{ color: "var(--bb-gold)" }}
+                                >
+                                  ₹{order.total}
+                                </span>
+                              </div>
+                              <p className="text-xs truncate" style={{ color: "var(--bb-text)" }}>
+                                {order.items.map(i => i.name).join(", ")}
+                              </p>
+                              {order.note && (
+                                <p className="text-xs italic" style={{ color: "var(--bb-text-dim)" }}>
+                                  Note: {order.note}
+                                </p>
+                              )}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
 
             {/* Order items */}
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
