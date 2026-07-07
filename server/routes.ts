@@ -237,10 +237,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get categories (legacy - returns flat list of DB category strings)
+  // Get categories — returns actual categories from DB (menupage.categories)
   app.get("/api/categories", async (req, res) => {
     try {
-      const categories = storage.getCategories();
+      const categories = await storage.getMenuCategories();
       res.json(categories);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch categories" });
