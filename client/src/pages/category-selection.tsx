@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, Menu as MenuIcon, X, Search, Mic, MicOff, Loader2 } from "lucide-react";
+import { ArrowLeft, Menu as MenuIcon, X, Search, Mic, MicOff, Loader2, ClipboardList } from "lucide-react";
 import { useLocation, useParams } from "wouter";
 import { useState, useEffect, useMemo } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useOrder } from "@/contexts/OrderContext";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -248,6 +249,7 @@ export default function CategorySelection() {
   const [showHamburgerMenu, setShowHamburgerMenu] = useState(false);
   const { t } = useLanguage();
   const { isDark } = useTheme();
+  const { openSidebar, totalItems } = useOrder();
   const [foodSearchQuery, setFoodSearchQuery] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [speechRecognition, setSpeechRecognition] = useState<ISpeechRecognition | null>(null);
@@ -461,7 +463,22 @@ export default function CategorySelection() {
               />
             </div>
 
-            <div className="flex justify-end items-center flex-shrink-0" style={{ width: "44px" }}>
+            <div className="flex justify-end items-center gap-1 flex-shrink-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={openSidebar}
+                className="hover:bg-transparent relative"
+                style={{ color: "#333333" }}
+                data-testid="button-order"
+              >
+                <ClipboardList className="h-5 w-5 sm:h-6 sm:w-6" />
+                {totalItems > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full text-[10px] font-bold flex items-center justify-center px-0.5" style={{ background: "var(--bb-gold)", color: "#fff" }}>
+                    {totalItems}
+                  </span>
+                )}
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"

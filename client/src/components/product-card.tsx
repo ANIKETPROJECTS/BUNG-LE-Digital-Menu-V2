@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 import type { MenuItem } from "@shared/schema";
 import { useOrder } from "@/contexts/OrderContext";
 
@@ -129,7 +129,10 @@ interface ProductCardProps {
 
 export default function ProductCard({ item, onClick }: ProductCardProps) {
   const [imgError, setImgError] = useState(false);
-  const { addToOrder } = useOrder();
+  const { addToOrder, orderItems, updateQuantity } = useOrder();
+  const itemId = item._id?.toString() ?? "";
+  const orderLine = orderItems.find(l => l.item._id?.toString() === itemId);
+  const qty = orderLine?.quantity ?? 0;
   const override = getOverrideImage(item.name);
   const isBrokenImage = imgError || !item.image ||
     item.image.includes("example.com") ||
@@ -215,23 +218,50 @@ export default function ProductCard({ item, onClick }: ProductCardProps) {
               ? item.price.split("|").map(p => `₹${p.trim()}`).join(" | ")
               : `₹${item.price}`}
           </span>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              addToOrder(item);
-            }}
-            className="flex items-center justify-center rounded-full transition-transform active:scale-90"
-            style={{
-              width: "28px",
-              height: "28px",
-              background: "var(--bb-gold)",
-              color: "#fff",
-              flexShrink: 0,
-            }}
-            aria-label={`Add ${item.name} to order`}
-          >
-            <Plus size={15} strokeWidth={2.5} />
-          </button>
+          {qty > 0 ? (
+            <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+              <button
+                onClick={() => updateQuantity(itemId, qty - 1)}
+                className="w-7 h-7 rounded-full flex items-center justify-center transition-transform active:scale-90"
+                style={{ border: "1.5px solid var(--bb-gold)", color: "var(--bb-gold)" }}
+                aria-label="Decrease quantity"
+              >
+                <Minus size={12} strokeWidth={2.5} />
+              </button>
+              <span
+                className="w-5 text-center text-sm font-bold"
+                style={{ color: "var(--bb-gold)", fontFamily: "'DM Sans', sans-serif" }}
+              >
+                {qty}
+              </span>
+              <button
+                onClick={() => updateQuantity(itemId, qty + 1)}
+                className="w-7 h-7 rounded-full flex items-center justify-center transition-transform active:scale-90"
+                style={{ background: "var(--bb-gold)", color: "#fff" }}
+                aria-label="Increase quantity"
+              >
+                <Plus size={12} strokeWidth={2.5} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                addToOrder(item);
+              }}
+              className="flex items-center justify-center rounded-full transition-transform active:scale-90"
+              style={{
+                width: "28px",
+                height: "28px",
+                background: "var(--bb-gold)",
+                color: "#fff",
+                flexShrink: 0,
+              }}
+              aria-label={`Add ${item.name} to order`}
+            >
+              <Plus size={15} strokeWidth={2.5} />
+            </button>
+          )}
         </div>
       </div>
     </div>

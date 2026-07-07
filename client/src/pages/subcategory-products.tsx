@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Search, Mic, MicOff, ChevronDown, Filter, ShoppingBag } from "lucide-react";
+import { ArrowLeft, Search, Mic, MicOff, ChevronDown, Filter, ClipboardList } from "lucide-react";
 import Lottie from "lottie-react";
 // @ts-ignore
 import panAnimation from "@assets/Animaed_pan_1773736045253.json";
@@ -319,7 +319,7 @@ export default function SubcategoryProducts() {
               style={{ color: "var(--bb-gold)" }}
               data-testid="button-order"
             >
-              <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6" />
+              <ClipboardList className="h-5 w-5 sm:h-6 sm:w-6" />
               {totalItems > 0 && (
                 <span
                   className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full text-[10px] font-bold flex items-center justify-center px-0.5"

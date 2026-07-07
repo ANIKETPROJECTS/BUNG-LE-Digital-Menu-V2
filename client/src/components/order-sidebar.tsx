@@ -1,7 +1,7 @@
 import { useOrder } from "@/contexts/OrderContext";
 import { useCustomer } from "@/contexts/CustomerContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Minus, Plus, ShoppingBag, Trash2, CheckCircle, User, ChevronDown, ChevronUp, Clock, UtensilsCrossed } from "lucide-react";
+import { X, Minus, Plus, Trash2, CheckCircle, User, ChevronDown, ChevronUp, Clock, UtensilsCrossed, ClipboardList } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useQuery } from "@tanstack/react-query";
@@ -22,6 +22,7 @@ export default function OrderSidebar() {
   const [placed, setPlaced] = useState(false);
   const [note, setNote] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
+  const [ongoingOrder, setOngoingOrder] = useState<{ items: { name: string; quantity: number; price: string | number }[]; total: number; note?: string } | null>(null);
 
   // Fetch past orders for this customer
   const { data: pastOrders = [] } = useQuery<Order[]>({
@@ -64,12 +65,16 @@ export default function OrderSidebar() {
         body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error("Failed to place order");
+      setOngoingOrder({
+        items: orderItems.map(l => ({ name: l.item.name, quantity: l.quantity, price: l.item.price })),
+        total,
+        note: note.trim() || undefined,
+      });
       setPlaced(true);
       setNote("");
       clearOrder();
       setTimeout(() => {
         setPlaced(false);
-        closeSidebar();
       }, 2200);
     } catch (err) {
       console.error(err);
@@ -116,7 +121,7 @@ export default function OrderSidebar() {
               {/* Title row */}
               <div className="flex items-center justify-between px-5 py-3">
                 <div className="flex items-center gap-2">
-                  <ShoppingBag size={20} style={{ color: "var(--bb-gold)" }} />
+                  <ClipboardList size={20} style={{ color: "var(--bb-gold)" }} />
                   <span
                     className="text-lg font-bold uppercase tracking-wider"
                     style={{ color: "var(--bb-gold)", fontFamily: "'DM Sans', sans-serif" }}
@@ -297,12 +302,56 @@ export default function OrderSidebar() {
                   </p>
                 </motion.div>
               ) : orderItems.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full gap-3 opacity-50">
-                  <ShoppingBag size={48} style={{ color: "var(--bb-gold)" }} />
-                  <p style={{ color: "var(--bb-text)", fontFamily: "'DM Sans', sans-serif" }}>
-                    No items added yet
-                  </p>
-                </div>
+                ongoingOrder ? (
+                  <div className="space-y-3">
+                    {/* Ongoing order badge */}
+                    <div
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg"
+                      style={{ background: isDark ? "#1a1a1a" : "#fff8ee", border: "1px solid var(--bb-gold)" }}
+                    >
+                      <CheckCircle size={15} style={{ color: "var(--bb-gold)", flexShrink: 0 }} />
+                      <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--bb-gold)", fontFamily: "'DM Sans', sans-serif" }}>
+                        Current Order · ₹{ongoingOrder.total.toFixed(0)}
+                      </span>
+                      <button
+                        className="ml-auto text-xs underline"
+                        style={{ color: "var(--bb-text-dim)" }}
+                        onClick={() => setOngoingOrder(null)}
+                      >
+                        Clear
+                      </button>
+                    </div>
+                    {ongoingOrder.items.map((oi, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-3 rounded-xl p-3"
+                        style={{ background: isDark ? "#1a1a1a" : "#fff", border: "1px solid var(--bb-border)" }}
+                      >
+                        <div className="w-3 h-3 rounded-full flex-shrink-0 mt-0.5 bg-amber-400" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold uppercase" style={{ color: "var(--bb-gold)", fontFamily: "'DM Sans', sans-serif", wordBreak: "break-word" }}>
+                            {oi.name}
+                          </p>
+                          <p className="text-xs" style={{ color: "var(--bb-text-dim)" }}>
+                            ×{oi.quantity} · ₹{(parsePrice(oi.price) * oi.quantity).toFixed(0)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    {ongoingOrder.note && (
+                      <p className="text-xs italic px-1" style={{ color: "var(--bb-text-dim)" }}>
+                        Note: {ongoingOrder.note}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full gap-3 opacity-50">
+                    <ClipboardList size={48} style={{ color: "var(--bb-gold)" }} />
+                    <p style={{ color: "var(--bb-text)", fontFamily: "'DM Sans', sans-serif" }}>
+                      No items added yet
+                    </p>
+                  </div>
+                )
               ) : (
                 orderItems.map(({ item, quantity }) => {
                   const id = item._id?.toString() ?? "";
@@ -329,8 +378,8 @@ export default function OrderSidebar() {
                       {/* Name & price */}
                       <div className="flex-1 min-w-0">
                         <p
-                          className="text-sm font-semibold truncate uppercase"
-                          style={{ color: "var(--bb-gold)", fontFamily: "'DM Sans', sans-serif" }}
+                          className="text-sm font-semibold uppercase"
+                          style={{ color: "var(--bb-gold)", fontFamily: "'DM Sans', sans-serif", wordBreak: "break-word", overflowWrap: "break-word" }}
                         >
                           {item.name}
                         </p>

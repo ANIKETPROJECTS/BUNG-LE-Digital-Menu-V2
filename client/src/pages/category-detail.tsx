@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Search, ChevronLeft, ChevronRight, Mic, MicOff, ShoppingBag } from "lucide-react";
+import { ArrowLeft, Search, ChevronLeft, ChevronRight, Mic, MicOff, ClipboardList } from "lucide-react";
 import { useLocation, useParams } from "wouter";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -263,7 +263,7 @@ export default function CategoryDetail() {
               style={{ color: "#E49B1D" }}
               data-testid="button-order"
             >
-              <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6" />
+              <ClipboardList className="h-5 w-5 sm:h-6 sm:w-6" />
               {totalItems > 0 && (
                 <span
                   className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full text-[10px] font-bold flex items-center justify-center px-0.5"
