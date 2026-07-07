@@ -235,6 +235,7 @@ export interface Order {
   _id: ObjectId;
   tableId: string;
   tableNumber?: string;
+  floorId?: string;
   orderType: "dine-in" | "delivery" | "pickup";
   items: OrderItem[];
   total: number;
@@ -252,6 +253,7 @@ export interface Order {
 export interface InsertOrder {
   tableId: string;
   tableNumber?: string;
+  floorId?: string;
   orderType: "dine-in" | "delivery" | "pickup";
   items: OrderItem[];
   total: number;
@@ -268,6 +270,7 @@ export interface InsertOrder {
 export const insertOrderSchema = z.object({
   tableId: z.string().default("Table1"),
   tableNumber: z.string().optional(),
+  floorId: z.string().optional().default("Ground Floor"),
   orderType: z.enum(["dine-in", "delivery", "pickup"]).default("dine-in"),
   items: z.array(z.object({
     name: z.string(),

@@ -48,6 +48,7 @@ export default function OrderSidebar() {
     try {
       const body = {
         tableId: "Table1",
+        floorId: "Ground Floor",
         orderType: "dine-in",
         items: orderItems.map(l => ({
           name: l.item.name,

@@ -711,6 +711,7 @@ export class MongoStorage implements IStorage {
     const doc = {
       ...order,
       tableNumber,
+      floorId: order.floorId ?? "Ground Floor",
       orderType: order.orderType ?? "dine-in",
       paymentStatus: order.paymentStatus ?? "pending",
       paymentMode: order.paymentMode ?? null,
