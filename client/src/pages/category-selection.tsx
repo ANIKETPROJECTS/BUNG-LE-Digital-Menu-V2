@@ -277,6 +277,35 @@ export default function CategorySelection() {
     enabled: categoryId === "food" || categoryId === "bar"
   });
 
+  // For leaf categories with no subcategories, fetch their items directly
+  const isLeafCategory = !isLoadingCategories && mainCategory !== null && subcategories.length === 0
+    && categoryId !== "food" && categoryId !== "bar" && categoryId !== "mocktails";
+
+  const [directSearchQuery, setDirectSearchQuery] = useState("");
+  const [directVegFilter, setDirectVegFilter] = useState<"all" | "veg" | "non-veg">("all");
+
+  const { data: directItems = [], isLoading: isLoadingDirect } = useQuery<MenuItem[]>({
+    queryKey: ["/api/menu-items", categoryId],
+    queryFn: async () => {
+      const res = await fetch(`/api/menu-items?category=${encodeURIComponent(categoryId)}`);
+      if (!res.ok) throw new Error("Failed to fetch");
+      return res.json();
+    },
+    enabled: isLeafCategory,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const filteredDirectItems = useMemo(() => {
+    let items = directItems.filter(i => i.isAvailable);
+    if (directVegFilter === "veg") items = items.filter(i => i.isVeg);
+    else if (directVegFilter === "non-veg") items = items.filter(i => !i.isVeg);
+    if (directSearchQuery.trim()) {
+      const q = directSearchQuery.toLowerCase();
+      items = items.filter(i => i.name.toLowerCase().includes(q) || i.description.toLowerCase().includes(q));
+    }
+    return items;
+  }, [directItems, directVegFilter, directSearchQuery]);
+
   const { data: logoData } = useQuery<Logo>({
     queryKey: ["/api/logo"],
   });
@@ -554,7 +583,70 @@ export default function CategorySelection() {
           </div>
         )}
 
-        {(categoryId === "food" || categoryId === "bar") && foodSearchQuery.trim() ? (
+        {/* Leaf category: no subcategories — show items directly */}
+        {isLeafCategory ? (
+          <>
+            {/* Search + veg filter */}
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" style={{ color: "var(--bb-gold)" }} />
+              <Input
+                type="text"
+                placeholder={t.searchItems}
+                value={directSearchQuery}
+                onChange={(e) => setDirectSearchQuery(e.target.value)}
+                className="pl-10 pr-36 h-11 rounded-full border-2 text-[var(--bb-input-text)] placeholder:text-[var(--bb-text-dim)] focus-visible:ring-2 focus-visible:ring-[#C9A55C]/50"
+                style={{ borderColor: "#C9A55C", backgroundColor: "transparent" }}
+              />
+              <div className="absolute right-1 top-1/2 transform -translate-y-1/2">
+                <div
+                  className="inline-flex rounded-full p-0.5 items-center gap-0"
+                  style={isDark
+                    ? { backgroundColor: directVegFilter === "all" ? "rgba(255,255,255,0.1)" : directVegFilter === "veg" ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)" }
+                    : { backgroundColor: directVegFilter === "all" ? "rgba(0,0,0,0.07)" : directVegFilter === "veg" ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)", border: "1px solid rgba(0,0,0,0.12)" }}
+                >
+                  {(["all", "veg", "non-veg"] as const).map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => setDirectVegFilter(f)}
+                      className="px-2 py-0.5 text-[10px] sm:text-xs font-medium rounded-full transition-all duration-200 flex-shrink-0"
+                      style={directVegFilter === f
+                        ? { backgroundColor: f === "veg" ? "#22C55E" : f === "non-veg" ? "#EF4444" : isDark ? "white" : "#1C1500", color: f === "all" && isDark ? "black" : "white", lineHeight: "1.2" }
+                        : { color: isDark ? "#C9A55C" : "#5A3E00", lineHeight: "1.2" }}
+                    >
+                      {f === "all" ? t.all : f === "veg" ? t.veg : t.nonVeg}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {isLoadingDirect ? (
+              <div className="flex items-center justify-center min-h-[200px]">
+                <Loader2 className="h-8 w-8 animate-spin" style={{ color: "var(--bb-gold)" }} />
+              </div>
+            ) : filteredDirectItems.length === 0 ? (
+              <div className="flex flex-col items-center justify-center min-h-[200px] text-center">
+                <Search className="h-12 w-12 mb-4" style={{ color: "rgba(228,155,29,0.4)" }} />
+                <h3 className="text-lg font-semibold mb-2 tracking-widest uppercase" style={{ fontFamily: "'DM Sans', sans-serif", color: "var(--bb-gold)" }}>
+                  {t.noItemsFound}
+                </h3>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:gap-x-6 sm:gap-y-8">
+                {filteredDirectItems.map((item, index) => (
+                  <motion.div
+                    key={item._id?.toString() || index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05, duration: 0.3 }}
+                  >
+                    <ProductCard item={item} />
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </>
+        ) : (categoryId === "food" || categoryId === "bar") && foodSearchQuery.trim() ? (
           <div className="flex flex-col gap-6">
             {filteredItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center min-h-[200px] text-center">
