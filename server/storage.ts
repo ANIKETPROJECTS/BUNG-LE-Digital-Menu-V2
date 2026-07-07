@@ -92,6 +92,9 @@ export class MongoStorage implements IStorage {
     "sabzi-tarkari", "murg-e-khaas", "gosht-e-khaas", "agri-style",
     "rotis", "oriental-curries", "fried-rice-noodles", "basmati-ki-khushbu",
     "dals", "salad-raita", "desserts",
+    // USER-CREATED MENU CATEGORIES
+    "nonveg-rice", "soup-veg-starters",
+    "nonveg-starters-appetizers", "nonveg-noodle-veg-rice",
     // BAR
     "cocktails", "shots", "beer", "alcopops", "wine", "liquor", "beverages",
     "whisky", "single-malt", "bourbon-irish", "vodka", "gin", "rum", "brandy",
