@@ -420,8 +420,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/orders/by-phone/:phone", async (req, res) => {
     try {
       const { phone } = req.params;
-      const orders = await storage.getOrders();
-      const customerOrders = orders.filter(o => o.customerPhone === phone);
+      res.set("Cache-Control", "no-store");
+      const customerOrders = await storage.getOrdersByPhone(phone);
       res.json(customerOrders);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch customer orders" });

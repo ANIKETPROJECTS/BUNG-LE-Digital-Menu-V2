@@ -58,6 +58,7 @@ export interface IStorage {
 
   createOrder(order: InsertOrder): Promise<Order>;
   getOrders(): Promise<Order[]>;
+  getOrdersByPhone(phone: string): Promise<Order[]>;
 }
 
 export class MongoStorage implements IStorage {
@@ -708,6 +709,13 @@ export class MongoStorage implements IStorage {
 
   async getOrders(): Promise<Order[]> {
     return await this.ordersCollection.find({}).sort({ createdAt: -1 }).toArray();
+  }
+
+  async getOrdersByPhone(phone: string): Promise<Order[]> {
+    return await this.ordersCollection
+      .find({ customerPhone: phone })
+      .sort({ createdAt: -1 })
+      .toArray();
   }
 
   async clearDatabase(): Promise<void> {

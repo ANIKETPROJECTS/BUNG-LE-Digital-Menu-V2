@@ -34,7 +34,9 @@ export default function OrderSidebar() {
     },
     enabled: !!customer?.phone && profileOpen,
     staleTime: 0,
-    refetchOnMount: true,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    gcTime: 0,
   });
 
   const total = orderItems.reduce((sum, l) => sum + parsePrice(l.item.price) * l.quantity, 0);
