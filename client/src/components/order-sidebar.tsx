@@ -234,46 +234,56 @@ export default function OrderSidebar() {
                         >
                           Previous Orders
                         </p>
-                        {pastOrders.filter(o => o.status === "completed").length === 0 ? (
+                        {pastOrders.length === 0 ? (
                           <p className="text-xs" style={{ color: "var(--bb-text-dim)" }}>
-                            No completed orders yet.
+                            No previous orders yet.
                           </p>
                         ) : (
-                          pastOrders.filter(o => o.status === "completed").slice(0, 5).map(order => (
-                            <div
-                              key={order._id?.toString()}
-                              className="rounded-lg p-2.5 space-y-1"
-                              style={{
-                                background: isDark ? "#1a1a1a" : "#fff",
-                                border: "1px solid var(--bb-border)",
-                              }}
-                            >
-                              <div className="flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-1.5">
-                                  <Clock size={11} style={{ color: "var(--bb-text-dim)" }} />
-                                  <span className="text-xs" style={{ color: "var(--bb-text-dim)" }}>
-                                    {new Date(order.createdAt).toLocaleDateString("en-IN", {
-                                      day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
-                                    })}
-                                  </span>
+                          pastOrders.slice(0, 5).map(order => {
+                            const statusColor =
+                              order.status === "completed" ? "#22c55e" :
+                              order.status === "cancelled" ? "#ef4444" : "#E49B1D";
+                            return (
+                              <div
+                                key={order._id?.toString()}
+                                className="rounded-lg p-2.5 space-y-1"
+                                style={{
+                                  background: isDark ? "#1a1a1a" : "#fff",
+                                  border: "1px solid var(--bb-border)",
+                                }}
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-1.5 min-w-0">
+                                    <Clock size={11} style={{ color: "var(--bb-text-dim)", flexShrink: 0 }} />
+                                    <span className="text-xs truncate" style={{ color: "var(--bb-text-dim)" }}>
+                                      {new Date(order.createdAt).toLocaleDateString("en-IN", {
+                                        day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
+                                      })}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                                    <span
+                                      className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full"
+                                      style={{ background: statusColor + "22", color: statusColor }}
+                                    >
+                                      {order.status}
+                                    </span>
+                                    <span className="text-xs font-bold" style={{ color: "var(--bb-gold)" }}>
+                                      ₹{order.total}
+                                    </span>
+                                  </div>
                                 </div>
-                                <span
-                                  className="text-xs font-bold"
-                                  style={{ color: "var(--bb-gold)" }}
-                                >
-                                  ₹{order.total}
-                                </span>
-                              </div>
-                              <p className="text-xs truncate" style={{ color: "var(--bb-text)" }}>
-                                {order.items.map(i => i.name).join(", ")}
-                              </p>
-                              {order.note && (
-                                <p className="text-xs italic" style={{ color: "var(--bb-text-dim)" }}>
-                                  Note: {order.note}
+                                <p className="text-xs" style={{ color: "var(--bb-text)", wordBreak: "break-word" }}>
+                                  {order.items.map(i => i.name).join(", ")}
                                 </p>
-                              )}
-                            </div>
-                          ))
+                                {order.note && (
+                                  <p className="text-xs italic" style={{ color: "var(--bb-text-dim)" }}>
+                                    Note: {order.note}
+                                  </p>
+                                )}
+                              </div>
+                            );
+                          })
                         )}
                       </div>
                     </motion.div>

@@ -37,7 +37,6 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, { item, quantity: 1 }];
     });
-    setIsOpen(true);
   }, []);
 
   const removeFromOrder = useCallback((itemId: string) => {
