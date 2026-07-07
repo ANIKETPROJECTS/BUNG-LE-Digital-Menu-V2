@@ -22,7 +22,7 @@ export default function OrderSidebar() {
   const [placed, setPlaced] = useState(false);
   const [note, setNote] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
-  const [ongoingOrder, setOngoingOrder] = useState<{ items: { name: string; quantity: number; price: string | number }[]; total: number; note?: string } | null>(null);
+  const [ongoingOrder, setOngoingOrder] = useState<{ items: { name: string; quantity: number; price: string | number }[]; total: number; note?: string; placedAt: Date } | null>(null);
 
   // Fetch past orders for this customer
   const { data: pastOrders = [] } = useQuery<Order[]>({
@@ -69,6 +69,7 @@ export default function OrderSidebar() {
         items: orderItems.map(l => ({ name: l.item.name, quantity: l.quantity, price: l.item.price })),
         total,
         note: note.trim() || undefined,
+        placedAt: new Date(),
       });
       setPlaced(true);
       setNote("");
@@ -360,11 +361,16 @@ export default function OrderSidebar() {
                       style={{ background: isDark ? "#1a1a1a" : "#fff8ee", border: "1px solid var(--bb-gold)" }}
                     >
                       <CheckCircle size={15} style={{ color: "var(--bb-gold)", flexShrink: 0 }} />
-                      <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--bb-gold)", fontFamily: "'DM Sans', sans-serif" }}>
-                        Current Order · ₹{ongoingOrder.total.toFixed(0)}
-                      </span>
+                      <div className="flex-1 min-w-0">
+                        <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--bb-gold)", fontFamily: "'DM Sans', sans-serif" }}>
+                          Current Order · ₹{ongoingOrder.total.toFixed(0)}
+                        </span>
+                        <p className="text-[10px]" style={{ color: "var(--bb-text-dim)" }}>
+                          Ordered at {ongoingOrder.placedAt.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      </div>
                       <button
-                        className="ml-auto text-xs underline"
+                        className="ml-auto text-xs underline flex-shrink-0"
                         style={{ color: "var(--bb-text-dim)" }}
                         onClick={() => setOngoingOrder(null)}
                       >
