@@ -302,10 +302,16 @@ export default function Welcome() {
   const welcomeUI: WelcomeScreenUI = welcomeUIData ?? DEFAULT_WELCOME_UI;
   const logoSrc = welcomeUI.logoUrl && welcomeUI.logoUrl.trim() !== "" ? welcomeUI.logoUrl : atDigitalMenuLogo;
 
-  const { setCustomer } = useCustomer();
+  const { customer, setCustomer } = useCustomer();
 
   const handleExploreMenu = () => {
-    setShowCustomerForm(true);
+    if (customer) {
+      // Already have their details — go straight in
+      playWelcomeAudio();
+      setLocation("/menu");
+    } else {
+      setShowCustomerForm(true);
+    }
   };
 
   const handleCustomerSubmit = async (name: string, phone: string) => {
