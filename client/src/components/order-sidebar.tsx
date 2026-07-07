@@ -229,12 +229,12 @@ export default function OrderSidebar() {
                         >
                           Previous Orders
                         </p>
-                        {pastOrders.length === 0 ? (
+                        {pastOrders.filter(o => o.status === "completed").length === 0 ? (
                           <p className="text-xs" style={{ color: "var(--bb-text-dim)" }}>
-                            No previous orders yet.
+                            No completed orders yet.
                           </p>
                         ) : (
-                          pastOrders.slice(0, 5).map(order => (
+                          pastOrders.filter(o => o.status === "completed").slice(0, 5).map(order => (
                             <div
                               key={order._id?.toString()}
                               className="rounded-lg p-2.5 space-y-1"
