@@ -702,7 +702,28 @@ export class MongoStorage implements IStorage {
 
   async createOrder(order: InsertOrder): Promise<Order> {
     const now = new Date();
-    const doc = { ...order, createdAt: now };
+
+    // Derive POS-compatible tableNumber from tableId if not explicitly supplied
+    // e.g. "Table1" → "T1", "Table 2" → "T2", already "T3" → "T3"
+    const tableNumber = order.tableNumber
+      ?? order.tableId.replace(/^table\s*/i, "T").replace(/^T(\d)$/i, "T$1");
+
+    const doc = {
+      ...order,
+      tableNumber,
+      orderType: order.orderType ?? "dine-in",
+      paymentStatus: order.paymentStatus ?? "pending",
+      paymentMode: order.paymentMode ?? null,
+      customerEmail: order.customerEmail ?? null,
+      customerAddress: order.customerAddress ?? null,
+      items: order.items.map(item => ({
+        ...item,
+        isVeg: item.isVeg ?? true,
+        notes: item.notes ?? null,
+      })),
+      createdAt: now,
+    };
+
     const result = await this.ordersCollection.insertOne(doc as any);
     return { _id: result.insertedId, ...doc } as any;
   }

@@ -48,14 +48,19 @@ export default function OrderSidebar() {
     try {
       const body = {
         tableId: "Table1",
+        orderType: "dine-in",
         items: orderItems.map(l => ({
           name: l.item.name,
           price: l.item.price,
           quantity: l.quantity,
           category: l.item.category || "",
+          isVeg: l.item.isVeg ?? true,
+          notes: null,
         })),
         total,
         status: "pending",
+        paymentStatus: "pending",
+        paymentMode: null,
         ...(note.trim() ? { note: note.trim() } : {}),
         ...(customer ? { customerName: customer.name, customerPhone: customer.phone } : {}),
       };

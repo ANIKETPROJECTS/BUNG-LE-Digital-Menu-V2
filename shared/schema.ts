@@ -227,41 +227,63 @@ export interface OrderItem {
   price: string | number;
   quantity: number;
   category: string;
+  isVeg?: boolean;
+  notes?: string | null;
 }
 
 export interface Order {
   _id: ObjectId;
   tableId: string;
+  tableNumber?: string;
+  orderType: "dine-in" | "delivery" | "pickup";
   items: OrderItem[];
   total: number;
   status: "pending" | "confirmed" | "completed";
+  paymentStatus: "pending" | "paid";
+  paymentMode?: "cash" | "upi" | "card" | "online" | null;
   note?: string;
   customerName?: string;
   customerPhone?: string;
+  customerEmail?: string | null;
+  customerAddress?: string | null;
   createdAt: Date;
 }
 
 export interface InsertOrder {
   tableId: string;
+  tableNumber?: string;
+  orderType: "dine-in" | "delivery" | "pickup";
   items: OrderItem[];
   total: number;
   status: "pending" | "confirmed" | "completed";
+  paymentStatus: "pending" | "paid";
+  paymentMode?: "cash" | "upi" | "card" | "online" | null;
   note?: string;
   customerName?: string;
   customerPhone?: string;
+  customerEmail?: string | null;
+  customerAddress?: string | null;
 }
 
 export const insertOrderSchema = z.object({
   tableId: z.string().default("Table1"),
+  tableNumber: z.string().optional(),
+  orderType: z.enum(["dine-in", "delivery", "pickup"]).default("dine-in"),
   items: z.array(z.object({
     name: z.string(),
     price: z.union([z.number(), z.string()]),
     quantity: z.number().positive(),
     category: z.string(),
+    isVeg: z.boolean().optional(),
+    notes: z.string().nullable().optional(),
   })).min(1),
   total: z.number().nonnegative(),
   status: z.enum(["pending", "confirmed", "completed"]).default("pending"),
+  paymentStatus: z.enum(["pending", "paid"]).default("pending"),
+  paymentMode: z.enum(["cash", "upi", "card", "online"]).nullable().optional(),
   note: z.string().optional(),
   customerName: z.string().optional(),
   customerPhone: z.string().optional(),
+  customerEmail: z.string().nullable().optional(),
+  customerAddress: z.string().nullable().optional(),
 });
