@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Search, Mic, MicOff, ChevronDown, Filter } from "lucide-react";
+import { ArrowLeft, Search, Mic, MicOff, ChevronDown, Filter, ShoppingBag } from "lucide-react";
 import Lottie from "lottie-react";
 // @ts-ignore
 import panAnimation from "@assets/Animaed_pan_1773736045253.json";
@@ -19,6 +19,7 @@ import ProductCard from "@/components/product-card";
 import DishDetailModal from "@/components/dish-detail-modal";
 import FloatingButtons from "@/components/floating-buttons";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useOrder } from "@/contexts/OrderContext";
 import type { MenuItem, MenuCategory, MenuSubCategory } from "@shared/schema";
 
 function findSubcategoryNode(categories: MenuCategory[], categoryId: string, subcategoryId: string): MenuSubCategory | null {
@@ -103,6 +104,7 @@ export default function SubcategoryProducts() {
   const subcategoryId = params.subcategory || "";
   const { t } = useLanguage();
   const { isDark } = useTheme();
+  const { openSidebar, totalItems } = useOrder();
 
   const { data: menuCategories = [], isLoading: isLoadingCategories } = useQuery<MenuCategory[]>({
     queryKey: ["/api/menu-categories"],
@@ -309,7 +311,24 @@ export default function SubcategoryProducts() {
               </h1>
             </div>
 
-            <div className="w-9" />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={openSidebar}
+              className="hover:bg-transparent relative flex-shrink-0"
+              style={{ color: "var(--bb-gold)" }}
+              data-testid="button-order"
+            >
+              <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6" />
+              {totalItems > 0 && (
+                <span
+                  className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full text-[10px] font-bold flex items-center justify-center px-0.5"
+                  style={{ background: "var(--bb-gold)", color: "#fff" }}
+                >
+                  {totalItems}
+                </span>
+              )}
+            </Button>
           </div>
         </div>
       </header>

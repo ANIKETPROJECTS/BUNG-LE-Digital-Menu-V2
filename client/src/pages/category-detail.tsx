@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Search, ChevronLeft, ChevronRight, Mic, MicOff } from "lucide-react";
+import { ArrowLeft, Search, ChevronLeft, ChevronRight, Mic, MicOff, ShoppingBag } from "lucide-react";
 import { useLocation, useParams } from "wouter";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import DishCard from "@/components/dish-card";
 import FloatingButtons from "@/components/floating-buttons";
 import { getMainCategory, getSubcategoryIds } from "@/lib/menu-categories";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useOrder } from "@/contexts/OrderContext";
 import type { MenuItem } from "@shared/schema";
 
 const nibblesImg = "https://res.cloudinary.com/dui1jsojt/image/upload/v1777092685/tarang-assets/image_1765861653339.png";
@@ -129,6 +130,7 @@ export default function CategoryDetail() {
   const params = useParams<{ category: string }>();
   const categoryId = params.category || "food";
   const { isDark } = useTheme();
+  const { openSidebar, totalItems } = useOrder();
   const pageBg = isDark ? "#000000" : "#FFFFFF";
   const subBgInactive = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)";
   const labelInactive = isDark ? "#DCD4C8" : "#5A3E00";
@@ -253,7 +255,24 @@ export default function CategoryDetail() {
               {mainCategory.displayLabel}
             </h1>
 
-            <div className="w-9" />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={openSidebar}
+              className="hover:bg-transparent relative flex-shrink-0"
+              style={{ color: "#E49B1D" }}
+              data-testid="button-order"
+            >
+              <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6" />
+              {totalItems > 0 && (
+                <span
+                  className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full text-[10px] font-bold flex items-center justify-center px-0.5"
+                  style={{ background: "#E49B1D", color: "#fff" }}
+                >
+                  {totalItems}
+                </span>
+              )}
+            </Button>
           </div>
         </div>
       </header>

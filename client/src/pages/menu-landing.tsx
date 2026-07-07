@@ -28,6 +28,7 @@ import {
   Drumstick,
   GlassWater,
   ChevronDown,
+  ShoppingBag,
 } from "lucide-react";
 
 import { useLocation } from "wouter";
@@ -36,6 +37,7 @@ import HamburgerMenu from "@/components/hamburger-menu";
 import FloatingButtons from "@/components/floating-buttons";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useOrder } from "@/contexts/OrderContext";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -1161,6 +1163,7 @@ export default function MenuLanding() {
   const { toast } = useToast();
   const { t } = useLanguage();
   const { isDark } = useTheme();
+  const { openSidebar, totalItems } = useOrder();
   const [showCoupons, setShowCoupons] = useState(false);
 
   const { data: coupons = [] } = useQuery<Coupon[]>({
@@ -1239,7 +1242,27 @@ export default function MenuLanding() {
               />
             </div>
 
-            <div className="flex justify-end items-center flex-shrink-0" style={{ width: "44px" }}>
+            <div className="flex justify-end items-center gap-1 flex-shrink-0">
+              {/* Order button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={openSidebar}
+                className="hover:bg-transparent relative"
+                style={{ color: "#333333" }}
+                data-testid="button-order"
+              >
+                <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6" />
+                {totalItems > 0 && (
+                  <span
+                    className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full text-[10px] font-bold flex items-center justify-center px-0.5"
+                    style={{ background: "var(--bb-gold)", color: "#fff" }}
+                  >
+                    {totalItems}
+                  </span>
+                )}
+              </Button>
+              {/* Hamburger */}
               <Button
                 variant="ghost"
                 size="icon"
