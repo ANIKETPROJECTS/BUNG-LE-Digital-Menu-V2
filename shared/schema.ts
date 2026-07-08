@@ -39,12 +39,23 @@ export interface User {
   updatedAt: Date;
 }
 
+export interface FavoriteItem {
+  menuItemId: string;
+  name: string;
+  price: string | number;
+  image: string;
+  category: string;
+  isVeg?: boolean;
+  addedAt: Date;
+}
+
 export interface Customer {
   _id: ObjectId;
   name: string;
   contactNumber: string;
   visitCount: number;
   lastVisitDate: Date;
+  favorites?: FavoriteItem[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -200,6 +211,17 @@ export const insertCustomerSchema = z.object({
   lastVisitDate: z.date().optional(),
 });
 
+export const favoriteItemSchema = z.object({
+  menuItemId: z.string().min(1),
+  name: z.string().min(1),
+  price: z.union([z.number(), z.string()]),
+  image: z.string().optional().default(""),
+  category: z.string().optional().default(""),
+  isVeg: z.boolean().optional(),
+});
+
+export type InsertFavoriteItem = z.infer<typeof favoriteItemSchema>;
+
 export const insertReservationSchema = z.object({
   name: z.string().min(1),
   phone: z.string().min(10).max(10),
@@ -231,6 +253,8 @@ export interface OrderItem {
   notes?: string | null;
 }
 
+export type OrderStatus = "pending" | "confirmed" | "preparing" | "ready" | "served" | "completed" | "cancelled";
+
 export interface Order {
   _id: ObjectId;
   tableId: string;
@@ -239,7 +263,7 @@ export interface Order {
   orderType: "dine-in" | "delivery" | "pickup";
   items: OrderItem[];
   total: number;
-  status: "pending" | "confirmed" | "completed";
+  status: OrderStatus;
   paymentStatus: "pending" | "paid";
   paymentMode?: "cash" | "upi" | "card" | "online" | null;
   note?: string;
@@ -257,7 +281,7 @@ export interface InsertOrder {
   orderType: "dine-in" | "delivery" | "pickup";
   items: OrderItem[];
   total: number;
-  status: "pending" | "confirmed" | "completed";
+  status: OrderStatus;
   paymentStatus: "pending" | "paid";
   paymentMode?: "cash" | "upi" | "card" | "online" | null;
   note?: string;
@@ -281,7 +305,7 @@ export const insertOrderSchema = z.object({
     notes: z.string().nullable().optional(),
   })).min(1),
   total: z.number().nonnegative(),
-  status: z.enum(["pending", "confirmed", "completed"]).default("pending"),
+  status: z.enum(["pending", "confirmed", "preparing", "ready", "served", "completed", "cancelled"]).default("pending"),
   paymentStatus: z.enum(["pending", "paid"]).default("pending"),
   paymentMode: z.enum(["cash", "upi", "card", "online"]).nullable().optional(),
   note: z.string().optional(),

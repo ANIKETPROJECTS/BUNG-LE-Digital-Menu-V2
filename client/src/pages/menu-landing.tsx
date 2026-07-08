@@ -28,12 +28,13 @@ import {
   Drumstick,
   GlassWater,
   ChevronDown,
-  ClipboardList,
 } from "lucide-react";
 
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import HamburgerMenu from "@/components/hamburger-menu";
+import HeaderActions from "@/components/header-actions";
+import StatusBar from "@/components/status-bar";
 import FloatingButtons from "@/components/floating-buttons";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -1163,7 +1164,7 @@ export default function MenuLanding() {
   const { toast } = useToast();
   const { t } = useLanguage();
   const { isDark } = useTheme();
-  const { openSidebar, totalItems } = useOrder();
+  useOrder();
   const [showCoupons, setShowCoupons] = useState(false);
 
   const { data: coupons = [] } = useQuery<Coupon[]>({
@@ -1243,25 +1244,8 @@ export default function MenuLanding() {
             </div>
 
             <div className="flex justify-end items-center gap-1 flex-shrink-0">
-              {/* Order button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={openSidebar}
-                className="hover:bg-transparent relative"
-                style={{ color: "#333333" }}
-                data-testid="button-order"
-              >
-                <ClipboardList className="h-5 w-5 sm:h-6 sm:w-6" />
-                {totalItems > 0 && (
-                  <span
-                    className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full text-[10px] font-bold flex items-center justify-center px-0.5"
-                    style={{ background: "var(--bb-gold)", color: "#fff" }}
-                  >
-                    {totalItems}
-                  </span>
-                )}
-              </Button>
+              {/* Profile / Favorites / Order */}
+              <HeaderActions color="#333333" />
               {/* Hamburger */}
               <Button
                 variant="ghost"
@@ -1287,6 +1271,8 @@ export default function MenuLanding() {
           onCategoryClick={handleCategoryClick}
         />
       </header>
+
+      <StatusBar />
 
       <AnimatePresence>
       </AnimatePresence>

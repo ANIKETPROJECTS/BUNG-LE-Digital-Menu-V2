@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useOrder } from "@/contexts/OrderContext";
+import HeaderActions from "@/components/header-actions";
+import StatusBar from "@/components/status-bar";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
-  ClipboardList,
   Phone,
   Users,
   Clock,
@@ -220,7 +221,7 @@ function MenuAccordion({ section }: { section: { icon: any; title: string; items
 
 export default function PartyMenu() {
   const [, setLocation] = useLocation();
-  const { openSidebar, totalItems } = useOrder();
+  useOrder();
   const [tab, setTab] = useState<"plans" | "compare" | "veg" | "nonveg" | "hall">("plans");
 
   const tabs: { id: typeof tab; label: string }[] = [
@@ -246,19 +247,9 @@ export default function PartyMenu() {
         >
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <button
-          onClick={openSidebar}
-          className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90 relative"
-          style={{ color: "var(--bb-gold)" }}
-          data-testid="button-order-party-menu"
-        >
-          <ClipboardList className="w-5 h-5" />
-          {totalItems > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full text-[10px] font-bold flex items-center justify-center px-0.5" style={{ background: "var(--bb-gold)", color: "#fff" }}>
-              {totalItems}
-            </span>
-          )}
-        </button>
+        <div className="absolute top-3 right-3">
+          <HeaderActions color="var(--bb-gold)" size="sm" />
+        </div>
 
         <img
           src="/bungle-logo.svg"
@@ -277,6 +268,8 @@ export default function PartyMenu() {
           Celebration Menu
         </h2>
       </div>
+
+      <StatusBar />
 
       {/* Tabs */}
       <div className="flex-shrink-0 overflow-x-auto" style={{ borderBottom: "1px solid rgba(228,155,29,0.18)" }}>

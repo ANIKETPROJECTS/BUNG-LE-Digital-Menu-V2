@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertCartItemSchema, insertCustomerSchema, updateMenuItemFlagsSchema, insertReservationSchema, insertOrderSchema } from "@shared/schema";
+import { insertCartItemSchema, insertCustomerSchema, updateMenuItemFlagsSchema, insertReservationSchema, insertOrderSchema, favoriteItemSchema } from "@shared/schema";
 
 function getAdminToken() {
   return process.env.ADMIN_API_TOKEN || (process.env.NODE_ENV !== "production" ? "admin123" : "");
@@ -88,6 +88,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch customers" });
+    }
+  });
+
+  // Fetch a single customer's full profile (favorites, visit stats, etc.) by phone
+  app.get("/api/customers/by-phone/:phone", async (req, res) => {
+    try {
+      const { phone } = req.params;
+      res.set("Cache-Control", "no-store");
+      const customer = await storage.getCustomerByPhone(phone);
+      if (!customer) return res.status(404).json({ message: "Customer not found" });
+      res.json(customer);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch customer" });
+    }
+  });
+
+  // Toggle a menu item in/out of a customer's favorites
+  app.post("/api/customers/:phone/favorites/toggle", async (req, res) => {
+    try {
+      const { phone } = req.params;
+      const validated = favoriteItemSchema.parse(req.body);
+      const updated = await storage.toggleFavorite(phone, validated);
+      if (!updated) return res.status(404).json({ message: "Customer not found" });
+      res.json(updated);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid favorite data" });
     }
   });
 
@@ -425,6 +451,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(customerOrders);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch customer orders" });
+    }
+  });
+
+  // Delete a customer's completed/cancelled order history (ongoing orders are preserved)
+  app.delete("/api/orders/by-phone/:phone", async (req, res) => {
+    try {
+      const { phone } = req.params;
+      const deletedCount = await storage.deleteCompletedOrdersByPhone(phone);
+      res.json({ deletedCount });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete order history" });
     }
   });
 

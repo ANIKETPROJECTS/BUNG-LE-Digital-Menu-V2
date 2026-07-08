@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useQuery } from "@tanstack/react-query";
 import type { Order } from "@shared/schema";
+import { formatTableNumber } from "@/lib/table";
 
 function parsePrice(price: string | number): number {
   if (typeof price === "number") return price;
@@ -156,7 +157,7 @@ export default function OrderSidebar() {
                     className="text-sm font-bold uppercase tracking-widest"
                     style={{ color: "var(--bb-gold)", fontFamily: "'DM Sans', sans-serif" }}
                   >
-                    Table 1
+                    {formatTableNumber("Table1")}
                   </span>
                 </div>
 
@@ -323,7 +324,7 @@ export default function OrderSidebar() {
                       </div>
                       {/* Table */}
                       <p className="text-xs" style={{ color: "var(--bb-text-dim)" }}>
-                        Table: <span className="font-semibold" style={{ color: "var(--bb-gold)" }}>{order.tableId}</span>
+                        Table: <span className="font-semibold" style={{ color: "var(--bb-gold)" }}>{formatTableNumber(order.tableId)}</span>
                       </p>
                       {order.note && (
                         <p className="text-xs italic" style={{ color: "var(--bb-text-dim)" }}>Note: {order.note}</p>

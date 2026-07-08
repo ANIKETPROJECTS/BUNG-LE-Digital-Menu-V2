@@ -1,9 +1,11 @@
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowLeft, Menu as MenuIcon, X, ClipboardList } from "lucide-react";
+import { ArrowLeft, Menu as MenuIcon, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import HamburgerMenu from "@/components/hamburger-menu";
+import HeaderActions from "@/components/header-actions";
+import StatusBar from "@/components/status-bar";
 import { useOrder } from "@/contexts/OrderContext";
 import { useQuery } from "@tanstack/react-query";
 import type { OfferTileImages } from "@shared/schema";
@@ -15,7 +17,7 @@ export default function MocktailsCocktails() {
   const [, setLocation] = useLocation();
   const [showHamburgerMenu, setShowHamburgerMenu] = useState(false);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
-  const { openSidebar, totalItems } = useOrder();
+  useOrder();
 
   const { data: offerTileImages } = useQuery<OfferTileImages>({
     queryKey: ["/api/offer-tile-images"],
@@ -59,21 +61,7 @@ export default function MocktailsCocktails() {
             </div>
 
             <div className="flex justify-end items-center gap-1 flex-shrink-0">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={openSidebar}
-                className="hover:bg-transparent relative"
-                style={{ color: "#333333" }}
-                data-testid="button-order"
-              >
-                <ClipboardList className="h-5 w-5 sm:h-6 sm:w-6" />
-                {totalItems > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full text-[10px] font-bold flex items-center justify-center px-0.5" style={{ background: "var(--bb-gold)", color: "#fff" }}>
-                    {totalItems}
-                  </span>
-                )}
-              </Button>
+              <HeaderActions color="#333333" />
               <Button
                 variant="ghost"
                 size="icon"
@@ -103,6 +91,8 @@ export default function MocktailsCocktails() {
           }}
         />
       </header>
+
+      <StatusBar />
 
       <div className="container mx-auto px-3 sm:px-4 pt-6 pb-24">
         {/* Page heading with red ribbon */}

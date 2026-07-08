@@ -1,5 +1,5 @@
 import { MongoClient, Db, Collection, ObjectId } from "mongodb";
-import { type User, type InsertUser, type MenuItem, type InsertMenuItem, type CartItem, type InsertCartItem, type Customer, type InsertCustomer, type SocialLinks, type WelcomeScreenUI, type Coupon, type CarouselImage, type Logo, type MenuCategory, type MenuSubCategory, type Reservation, type InsertReservation, type PaymentDetails, type CallWaiter, type RestaurantInfo, type SmartPicksCategory, type OfferTileImages, type Order, type InsertOrder } from "@shared/schema";
+import { type User, type InsertUser, type MenuItem, type InsertMenuItem, type CartItem, type InsertCartItem, type Customer, type InsertCustomer, type FavoriteItem, type InsertFavoriteItem, type SocialLinks, type WelcomeScreenUI, type Coupon, type CarouselImage, type Logo, type MenuCategory, type MenuSubCategory, type Reservation, type InsertReservation, type PaymentDetails, type CallWaiter, type RestaurantInfo, type SmartPicksCategory, type OfferTileImages, type Order, type InsertOrder } from "@shared/schema";
 
 type UpdateMenuItemFlags = {
   todaysSpecial?: boolean;
@@ -28,6 +28,7 @@ export interface IStorage {
   getCustomers(): Promise<Customer[]>;
   getCustomerByPhone(phone: string): Promise<Customer | undefined>;
   createOrUpdateCustomer(customer: InsertCustomer): Promise<{ customer: Customer; isNew: boolean }>;
+  toggleFavorite(phone: string, item: InsertFavoriteItem): Promise<Customer | undefined>;
 
   getSocialLinks(): Promise<SocialLinks | null>;
   updateSocialLinks(data: Partial<Omit<SocialLinks, '_id'>>): Promise<SocialLinks | null>;
@@ -59,6 +60,7 @@ export interface IStorage {
   createOrder(order: InsertOrder): Promise<Order>;
   getOrders(): Promise<Order[]>;
   getOrdersByPhone(phone: string): Promise<Order[]>;
+  deleteCompletedOrdersByPhone(phone: string): Promise<number>;
 }
 
 export class MongoStorage implements IStorage {
@@ -527,6 +529,30 @@ export class MongoStorage implements IStorage {
     return { customer: { _id: result.insertedId, ...customer } as any, isNew: true };
   }
 
+  async toggleFavorite(phone: string, item: InsertFavoriteItem): Promise<Customer | undefined> {
+    const existing = await this.getCustomerByPhone(phone);
+    if (!existing) return undefined;
+
+    // Atomic, filter-guarded toggle: try to remove the item first (only matches
+    // if it is present), otherwise add it (only matches if it is NOT present).
+    // Guarding both ops with the presence filter avoids duplicate favorites
+    // from concurrent toggle requests, unlike a read-then-blindly-write approach.
+    const pullResult = await this.customersCollection.updateOne(
+      { _id: existing._id, "favorites.menuItemId": item.menuItemId },
+      { $pull: { favorites: { menuItemId: item.menuItemId } }, $set: { updatedAt: new Date() } } as any
+    );
+
+    if (pullResult.modifiedCount === 0) {
+      const favorite: FavoriteItem = { ...item, addedAt: new Date() };
+      await this.customersCollection.updateOne(
+        { _id: existing._id, "favorites.menuItemId": { $ne: item.menuItemId } },
+        { $push: { favorites: favorite }, $set: { updatedAt: new Date() } } as any
+      );
+    }
+
+    return await this.getCustomerByPhone(phone);
+  }
+
   async getMenuItems(): Promise<MenuItem[]> {
     const allMenuItems: MenuItem[] = [];
     const collections = Array.from(this.categoryCollections.values());
@@ -738,6 +764,14 @@ export class MongoStorage implements IStorage {
       .find({ customerPhone: phone })
       .sort({ createdAt: -1 })
       .toArray();
+  }
+
+  async deleteCompletedOrdersByPhone(phone: string): Promise<number> {
+    const result = await this.ordersCollection.deleteMany({
+      customerPhone: phone,
+      status: { $in: ["completed", "cancelled"] },
+    });
+    return result.deletedCount ?? 0;
   }
 
   async clearDatabase(): Promise<void> {

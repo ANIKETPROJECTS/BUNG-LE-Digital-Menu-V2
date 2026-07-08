@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, Heart } from "lucide-react";
 import type { MenuItem } from "@shared/schema";
 import { useOrder } from "@/contexts/OrderContext";
+import { useFavorites } from "@/hooks/use-favorites";
 
 const fallbackImg = "https://res.cloudinary.com/dui1jsojt/image/upload/v1777092683/tarang-assets/coming_soon_imagev2_1766811809828.jpg";
 const soupManchowImg = "https://res.cloudinary.com/dui1jsojt/image/upload/v1777093033/tarang-assets/image_1776791999539.png";
@@ -130,9 +131,11 @@ interface ProductCardProps {
 export default function ProductCard({ item, onClick }: ProductCardProps) {
   const [imgError, setImgError] = useState(false);
   const { addToOrder, orderItems, updateQuantity } = useOrder();
+  const { isFavorite, toggleFavorite, hasCustomer } = useFavorites();
   const itemId = item._id?.toString() ?? "";
   const orderLine = orderItems.find(l => l.item._id?.toString() === itemId);
   const qty = orderLine?.quantity ?? 0;
+  const favorited = isFavorite(itemId);
   const override = getOverrideImage(item.name);
   const isBrokenImage = imgError || !item.image ||
     item.image.includes("example.com") ||
@@ -164,6 +167,32 @@ export default function ProductCard({ item, onClick }: ProductCardProps) {
             item.isVeg ? 'bg-green-500 border-green-300' : 'bg-red-500 border-red-300'
           }`}
         />
+        {hasCustomer && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFavorite({
+                menuItemId: itemId,
+                name: item.name,
+                price: item.price,
+                image: item.image,
+                category: item.category,
+                isVeg: item.isVeg,
+              });
+            }}
+            className="absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center transition-transform active:scale-90"
+            style={{ background: "rgba(0,0,0,0.35)" }}
+            aria-label={favorited ? `Remove ${item.name} from favorites` : `Add ${item.name} to favorites`}
+            data-testid={`button-favorite-${itemId}`}
+          >
+            <Heart
+              size={15}
+              strokeWidth={2.2}
+              fill={favorited ? "#E63946" : "transparent"}
+              color={favorited ? "#E63946" : "#fff"}
+            />
+          </button>
+        )}
       </div>
 
       {/* Text content — fixed-height rows so all cards align */}
