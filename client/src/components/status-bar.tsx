@@ -21,7 +21,11 @@ export default function StatusBar() {
     },
     enabled: !!customer?.phone,
     staleTime: 0,
+    gcTime: 0,
     refetchInterval: 1000,
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   const todayStart = new Date();
