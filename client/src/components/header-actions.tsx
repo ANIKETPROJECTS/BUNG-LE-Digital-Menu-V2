@@ -1,8 +1,7 @@
 import { useLocation } from "wouter";
-import { User, Heart, ClipboardList } from "lucide-react";
+import { User, ClipboardList } from "lucide-react";
 import { useOrder } from "@/contexts/OrderContext";
 import { useCustomer } from "@/contexts/CustomerContext";
-import { useFavorites } from "@/hooks/use-favorites";
 
 interface HeaderActionsProps {
   color?: string;
@@ -13,7 +12,6 @@ interface HeaderActionsProps {
 export default function HeaderActions({ color = "var(--bb-gold)", size = "md" }: HeaderActionsProps) {
   const { openSidebar, totalItems } = useOrder();
   const { customer } = useCustomer();
-  const { favorites } = useFavorites();
   const [, setLocation] = useLocation();
 
   const iconSize = size === "sm" ? "h-5 w-5" : "h-5 w-5 sm:h-6 sm:w-6";
@@ -31,23 +29,6 @@ export default function HeaderActions({ color = "var(--bb-gold)", size = "md" }:
           <User className={iconSize} />
         </button>
       )}
-      <button
-        onClick={() => setLocation("/profile")}
-        className="relative flex items-center justify-center p-1.5"
-        style={{ color }}
-        aria-label="Favorites"
-        data-testid="button-favorites"
-      >
-        <Heart className={iconSize} />
-        {favorites.length > 0 && (
-          <span
-            className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full text-[10px] font-bold flex items-center justify-center px-0.5"
-            style={{ background: "#E63946", color: "#fff" }}
-          >
-            {favorites.length}
-          </span>
-        )}
-      </button>
       <button
         onClick={openSidebar}
         className="relative flex items-center justify-center p-1.5"
