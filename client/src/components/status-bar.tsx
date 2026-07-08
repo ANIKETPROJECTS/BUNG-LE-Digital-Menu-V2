@@ -50,7 +50,7 @@ export default function StatusBar() {
       data-testid="status-bar"
     >
       <span className="text-[11px] sm:text-xs" style={{ color: "var(--bb-text-dim)" }}>
-        Status:{" "}
+        Table Status:{" "}
         <span className="inline-flex items-center gap-1.5 align-middle">
           <span
             className="inline-block rounded-full"
