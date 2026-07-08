@@ -24,8 +24,15 @@ export default function StatusBar() {
     refetchInterval: 1000,
   });
 
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
   const ongoing = orders
-    .filter((o) => o.status !== "completed" && o.status !== "cancelled")
+    .filter((o) =>
+      o.status !== "completed" &&
+      o.status !== "cancelled" &&
+      new Date(o.createdAt) >= todayStart
+    )
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const latest = ongoing[0];
 

@@ -279,7 +279,13 @@ export default function OrderSidebar() {
 
             {/* ── Ongoing orders — always visible ── */}
             {customer && (() => {
-              const ongoing = pastOrders.filter(o => o.status !== "completed" && o.status !== "cancelled");
+              const todayStart = new Date();
+              todayStart.setHours(0, 0, 0, 0);
+              const ongoing = pastOrders.filter(o =>
+                o.status !== "completed" &&
+                o.status !== "cancelled" &&
+                new Date(o.createdAt) >= todayStart
+              );
               if (ongoing.length === 0) return null;
               return (
                 <div
