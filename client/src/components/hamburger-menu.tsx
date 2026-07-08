@@ -423,30 +423,6 @@ export default function HamburgerMenu({
                 <div className="flex-1 h-px" style={{ background: "rgba(228,155,29,0.15)" }} />
               </div>
 
-              {/* ── Reservation Section ── */}
-              <motion.button
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setShowReservation(true)}
-                className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all"
-                style={{ background: isDark ? "rgba(228,155,29,0.06)" : "#FFFFFF", border: isDark ? "1px solid rgba(228,155,29,0.28)" : "1px solid rgba(0,0,0,0.1)" }}
-                data-testid="button-open-reservation"
-              >
-                <img src={reservationImg} alt="Reservation" className="w-12 h-12 object-contain flex-shrink-0 rounded-xl" />
-                <div className="text-left flex-1">
-                  <p className="text-[11px] font-semibold tracking-[0.2em] uppercase mb-0.5" style={{ color: "rgba(228,155,29,0.55)", fontFamily: "'DM Sans', sans-serif" }}>
-                    Table Booking
-                  </p>
-                  <p className="text-[15px] font-black tracking-wide" style={{ color: isDark ? "#E8D8B4" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif" }}>
-                    Make a Reservation
-                  </p>
-                  <p className="text-[10px] mt-0.5" style={{ color: isDark ? "rgba(220,212,200,0.4)" : "rgba(0,0,0,0.35)", fontFamily: "'DM Sans', sans-serif" }}>
-                    Reserve your table in seconds
-                  </p>
-                </div>
-                <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(90deg, #E49B1D, #E6C55A)" }}>
-                  <ChevronRight className="w-4 h-4" style={{ color: "#1C1500", strokeWidth: 3 }} />
-                </div>
-              </motion.button>
 
               {/* ── Pay & Order ── */}
               <div className="rounded-2xl overflow-hidden" style={{ background: isDark ? "rgba(228,155,29,0.04)" : "#FFFFFF", border: isDark ? "1px solid rgba(228,155,29,0.22)" : "1px solid rgba(0,0,0,0.1)" }}>
