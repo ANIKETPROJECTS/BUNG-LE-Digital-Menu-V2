@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, User, ShoppingBag, DollarSign, TrendingUp, Calendar, Heart, Clock, Trash2 } from "lucide-react";
+import { ArrowLeft, User, ShoppingBag, DollarSign, TrendingUp, Calendar, Heart, Clock, Trash2, ChevronDown } from "lucide-react";
 import { useCustomer } from "@/contexts/CustomerContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import type { Order } from "@shared/schema";
@@ -18,6 +18,7 @@ export default function ProfilePage() {
   const { isDark } = useTheme();
   const queryClient = useQueryClient();
   const [deleting, setDeleting] = useState(false);
+  const [favoritesOpen, setFavoritesOpen] = useState(false);
 
   const { data: orders = [] } = useQuery<Order[]>({
     queryKey: ["/api/orders/by-phone", customer?.phone],
@@ -158,32 +159,55 @@ export default function ProfilePage() {
 
         {/* Favorites */}
         <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--bb-border)" }}>
-          <div className="flex items-center gap-2 px-4 py-2.5" style={{ background: "#E63946" }}>
-            <Heart size={15} color="#fff" />
-            <span className="text-sm font-bold text-white">Your Favorites</span>
-          </div>
-          <div className="p-3 space-y-2" style={{ background: cardBg }}>
-            {favorites.length === 0 ? (
-              <p className="text-xs" style={{ color: "var(--bb-text-dim)" }}>No favorites yet — tap the heart on any dish to save it here.</p>
-            ) : (
-              favorites.map((f: any) => (
-                <div key={f.menuItemId} className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span
-                      className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
-                      style={{ background: "#E6394622", color: "#E63946" }}
-                    >
-                      1
+          <button
+            onClick={() => setFavoritesOpen(o => !o)}
+            className="w-full flex items-center justify-between gap-2 px-4 py-2.5"
+            style={{ background: "#E63946" }}
+            aria-expanded={favoritesOpen}
+            data-testid="button-toggle-favorites"
+          >
+            <div className="flex items-center gap-2">
+              <Heart size={15} color="#fff" />
+              <span className="text-sm font-bold text-white">Your Favorites</span>
+              {favorites.length > 0 && (
+                <span
+                  className="min-w-[18px] h-[18px] rounded-full text-[10px] font-bold flex items-center justify-center px-1"
+                  style={{ background: "#fff", color: "#E63946" }}
+                >
+                  {favorites.length}
+                </span>
+              )}
+            </div>
+            <ChevronDown
+              size={16}
+              color="#fff"
+              style={{ transform: favoritesOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}
+            />
+          </button>
+          {favoritesOpen && (
+            <div className="p-3 space-y-2" style={{ background: cardBg }}>
+              {favorites.length === 0 ? (
+                <p className="text-xs" style={{ color: "var(--bb-text-dim)" }}>No favorites yet — tap the heart on any dish to save it here.</p>
+              ) : (
+                favorites.map((f: any) => (
+                  <div key={f.menuItemId} className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span
+                        className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
+                        style={{ background: "#E6394622", color: "#E63946" }}
+                      >
+                        1
+                      </span>
+                      <span className="text-sm truncate" style={{ color: "var(--bb-text)" }}>{f.name}</span>
+                    </div>
+                    <span className="text-sm font-bold flex-shrink-0" style={{ color: "var(--bb-gold)" }}>
+                      ₹{parsePrice(f.price).toFixed(0)}
                     </span>
-                    <span className="text-sm truncate" style={{ color: "var(--bb-text)" }}>{f.name}</span>
                   </div>
-                  <span className="text-sm font-bold flex-shrink-0" style={{ color: "var(--bb-gold)" }}>
-                    ₹{parsePrice(f.price).toFixed(0)}
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
+                ))
+              )}
+            </div>
+          )}
         </div>
 
         {/* Order history */}
