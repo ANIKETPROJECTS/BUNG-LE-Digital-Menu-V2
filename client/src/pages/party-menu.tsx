@@ -252,7 +252,7 @@ export default function PartyMenu() {
         </div>
 
         <button
-          onClick={() => setLocation("/")}
+          onClick={() => setLocation("/menu")}
           aria-label="Go to home"
           data-testid="button-logo-home"
         >

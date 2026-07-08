@@ -53,7 +53,7 @@ export default function MocktailsCocktails() {
 
             <div className="flex-1 flex justify-center items-center overflow-visible">
               <button
-                onClick={() => setLocation("/")}
+                onClick={() => setLocation("/menu")}
                 className="hover:bg-transparent"
                 aria-label="Go to home"
                 data-testid="button-logo-home"
