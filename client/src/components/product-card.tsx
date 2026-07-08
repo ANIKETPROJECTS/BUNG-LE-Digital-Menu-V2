@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Plus, Minus, Heart } from "lucide-react";
+import { Plus, Minus, Heart, StickyNote } from "lucide-react";
 import type { MenuItem } from "@shared/schema";
 import { useOrder } from "@/contexts/OrderContext";
 import { useFavorites } from "@/hooks/use-favorites";
+import ItemNoteModal from "@/components/item-note-modal";
 
 const fallbackImg = "https://res.cloudinary.com/dui1jsojt/image/upload/v1777092683/tarang-assets/coming_soon_imagev2_1766811809828.jpg";
 const soupManchowImg = "https://res.cloudinary.com/dui1jsojt/image/upload/v1777093033/tarang-assets/image_1776791999539.png";
@@ -130,11 +131,13 @@ interface ProductCardProps {
 
 export default function ProductCard({ item, onClick }: ProductCardProps) {
   const [imgError, setImgError] = useState(false);
-  const { addToOrder, orderItems, updateQuantity } = useOrder();
+  const [noteOpen, setNoteOpen] = useState(false);
+  const { addToOrder, orderItems, updateQuantity, updateNote } = useOrder();
   const { isFavorite, toggleFavorite, hasCustomer } = useFavorites();
   const itemId = item._id?.toString() ?? "";
   const orderLine = orderItems.find(l => l.item._id?.toString() === itemId);
   const qty = orderLine?.quantity ?? 0;
+  const note = orderLine?.note ?? "";
   const favorited = isFavorite(itemId);
   const override = getOverrideImage(item.name);
   const isBrokenImage = imgError || !item.image ||
@@ -271,6 +274,21 @@ export default function ProductCard({ item, onClick }: ProductCardProps) {
               >
                 <Plus size={12} strokeWidth={2.5} />
               </button>
+              <button
+                onClick={() => setNoteOpen(true)}
+                className="relative w-7 h-7 rounded-full flex items-center justify-center transition-transform active:scale-90"
+                style={{ border: "1.5px solid var(--bb-gold)", color: "var(--bb-gold)" }}
+                aria-label={note ? "Edit note for this item" : "Add a note for this item"}
+                data-testid={`button-note-${itemId}`}
+              >
+                <StickyNote size={12} strokeWidth={2.5} />
+                {note && (
+                  <span
+                    className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full"
+                    style={{ background: "#E63946" }}
+                  />
+                )}
+              </button>
             </div>
           ) : (
             <button
@@ -293,6 +311,14 @@ export default function ProductCard({ item, onClick }: ProductCardProps) {
           )}
         </div>
       </div>
+      {noteOpen && (
+        <ItemNoteModal
+          itemName={item.name}
+          initialNote={note}
+          onClose={() => setNoteOpen(false)}
+          onSave={(n) => updateNote(itemId, n)}
+        />
+      )}
     </div>
   );
 }

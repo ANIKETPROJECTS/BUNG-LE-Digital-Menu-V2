@@ -1,12 +1,13 @@
 import { useOrder } from "@/contexts/OrderContext";
 import { useCustomer } from "@/contexts/CustomerContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Minus, Plus, Trash2, CheckCircle, User, ChevronDown, ChevronUp, Clock, UtensilsCrossed, ClipboardList } from "lucide-react";
+import { X, Minus, Plus, Trash2, CheckCircle, User, ChevronDown, ChevronUp, Clock, UtensilsCrossed, ClipboardList, StickyNote } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useQuery } from "@tanstack/react-query";
 import type { Order } from "@shared/schema";
 import { formatTableNumber } from "@/lib/table";
+import ItemNoteModal from "@/components/item-note-modal";
 
 function parsePrice(price: string | number): number {
   if (typeof price === "number") return price;
@@ -16,7 +17,8 @@ function parsePrice(price: string | number): number {
 }
 
 export default function OrderSidebar() {
-  const { orderItems, removeFromOrder, updateQuantity, clearOrder, isOpen, closeSidebar } = useOrder();
+  const { orderItems, removeFromOrder, updateQuantity, updateNote, clearOrder, isOpen, closeSidebar } = useOrder();
+  const [noteItemId, setNoteItemId] = useState<string | null>(null);
   const { customer } = useCustomer();
   const { isDark } = useTheme();
   const [placing, setPlacing] = useState(false);
@@ -57,7 +59,7 @@ export default function OrderSidebar() {
           quantity: l.quantity,
           category: l.item.category || "",
           isVeg: l.item.isVeg ?? true,
-          notes: null,
+          notes: l.note || null,
         })),
         total,
         status: "pending",
@@ -411,7 +413,7 @@ export default function OrderSidebar() {
                   </div>
                 )
               ) : (
-                orderItems.map(({ item, quantity }) => {
+                orderItems.map(({ item, quantity, note: itemNote }) => {
                   const id = item._id?.toString() ?? "";
                   const unitPrice = parsePrice(item.price);
                   return (
@@ -447,6 +449,11 @@ export default function OrderSidebar() {
                         >
                           ₹{unitPrice} × {quantity} = ₹{(unitPrice * quantity).toFixed(0)}
                         </p>
+                        {itemNote && (
+                          <p className="text-xs italic mt-0.5" style={{ color: "var(--bb-text-dim)", wordBreak: "break-word" }}>
+                            Note: {itemNote}
+                          </p>
+                        )}
                       </div>
                       {/* Qty controls */}
                       <div className="flex items-center gap-1">
@@ -469,6 +476,21 @@ export default function OrderSidebar() {
                           style={{ border: "1px solid var(--bb-border)", color: "var(--bb-gold)" }}
                         >
                           <Plus size={12} />
+                        </button>
+                        <button
+                          onClick={() => setNoteItemId(id)}
+                          className="relative w-7 h-7 rounded-full flex items-center justify-center"
+                          style={{ border: "1px solid var(--bb-border)", color: "var(--bb-gold)" }}
+                          aria-label={itemNote ? "Edit note for this item" : "Add a note for this item"}
+                          data-testid={`button-sidebar-note-${id}`}
+                        >
+                          <StickyNote size={12} />
+                          {itemNote && (
+                            <span
+                              className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full"
+                              style={{ background: "#E63946" }}
+                            />
+                          )}
                         </button>
                       </div>
                       {/* Remove */}
@@ -545,6 +567,18 @@ export default function OrderSidebar() {
           </motion.div>
         )}
       </AnimatePresence>
+      {noteItemId && (() => {
+        const line = orderItems.find(l => l.item._id?.toString() === noteItemId);
+        if (!line) return null;
+        return (
+          <ItemNoteModal
+            itemName={line.item.name}
+            initialNote={line.note ?? ""}
+            onClose={() => setNoteItemId(null)}
+            onSave={(n) => updateNote(noteItemId, n)}
+          />
+        );
+      })()}
     </>
   );
 }

@@ -4,6 +4,7 @@ import type { MenuItem } from "@shared/schema";
 export interface OrderLineItem {
   item: MenuItem;
   quantity: number;
+  note?: string;
 }
 
 interface OrderContextValue {
@@ -11,6 +12,7 @@ interface OrderContextValue {
   addToOrder: (item: MenuItem) => void;
   removeFromOrder: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
+  updateNote: (itemId: string, note: string) => void;
   clearOrder: () => void;
   isOpen: boolean;
   openSidebar: () => void;
@@ -55,6 +57,14 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const updateNote = useCallback((itemId: string, note: string) => {
+    setOrderItems(prev =>
+      prev.map(l =>
+        l.item._id?.toString() === itemId ? { ...l, note: note.trim() || undefined } : l
+      )
+    );
+  }, []);
+
   const clearOrder = useCallback(() => setOrderItems([]), []);
   const openSidebar = useCallback(() => setIsOpen(true), []);
   const closeSidebar = useCallback(() => setIsOpen(false), []);
@@ -67,6 +77,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       addToOrder,
       removeFromOrder,
       updateQuantity,
+      updateNote,
       clearOrder,
       isOpen,
       openSidebar,
