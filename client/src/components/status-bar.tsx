@@ -21,7 +21,7 @@ export default function StatusBar() {
     },
     enabled: !!customer?.phone,
     staleTime: 0,
-    refetchInterval: 5000,
+    refetchInterval: 1000,
   });
 
   const ongoing = orders
@@ -30,8 +30,8 @@ export default function StatusBar() {
   const latest = ongoing[0];
 
   const { label, color } = getStatusDisplay(latest?.status);
-  const tableNumber = formatTableNumber(latest?.tableId ?? "Table1");
-  const floorId = latest?.floorId || "Ground Floor";
+  const tableNumber = latest ? formatTableNumber(latest.tableId) : null;
+  const floorId = latest?.floorId || null;
 
   return (
     <div
@@ -54,20 +54,28 @@ export default function StatusBar() {
           </span>
         </span>
       </span>
-      <span style={{ color: "var(--bb-border)" }}>|</span>
-      <span className="text-[11px] sm:text-xs" style={{ color: "var(--bb-text-dim)" }}>
-        Table:{" "}
-        <span className="font-semibold" style={{ color: "var(--bb-gold)" }}>
-          {tableNumber}
-        </span>
-      </span>
-      <span style={{ color: "var(--bb-border)" }}>|</span>
-      <span className="text-[11px] sm:text-xs" style={{ color: "var(--bb-text-dim)" }}>
-        Floor:{" "}
-        <span className="font-semibold" style={{ color: "var(--bb-gold)" }}>
-          {floorId}
-        </span>
-      </span>
+      {tableNumber && (
+        <>
+          <span style={{ color: "var(--bb-border)" }}>|</span>
+          <span className="text-[11px] sm:text-xs" style={{ color: "var(--bb-text-dim)" }}>
+            Table:{" "}
+            <span className="font-semibold" style={{ color: "var(--bb-gold)" }}>
+              {tableNumber}
+            </span>
+          </span>
+        </>
+      )}
+      {floorId && (
+        <>
+          <span style={{ color: "var(--bb-border)" }}>|</span>
+          <span className="text-[11px] sm:text-xs" style={{ color: "var(--bb-text-dim)" }}>
+            Floor:{" "}
+            <span className="font-semibold" style={{ color: "var(--bb-gold)" }}>
+              {floorId}
+            </span>
+          </span>
+        </>
+      )}
     </div>
   );
 }
