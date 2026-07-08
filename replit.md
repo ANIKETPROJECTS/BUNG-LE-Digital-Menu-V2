@@ -52,6 +52,12 @@ Uses MongoDB with multiple databases:
 - `hamburger` — reservations, payment details, restaurant info
 - `smartpicks` — smart picks categories
 
+## Setup status
+
+- Dependencies installed, `MONGODB_URI` and `SESSION_SECRET` secrets configured, app verified running via the "Start application" workflow (Express serving on port 5000, connected to MongoDB, pages render and fetch data correctly).
+- Fixed import leftovers: deployment run command now points to the actual build output `dist/index.js` (was `dist/index.cjs`), and `dist/` is properly gitignored.
+- Known non-blocking issue: `/api/logo` returns 404 (no logo configured yet) and a welcome-screen audio file reference doesn't resolve — cosmetic, not required for the app to run.
+
 ## User preferences
 
 - Keep the existing MongoDB + Express + React structure as-is.

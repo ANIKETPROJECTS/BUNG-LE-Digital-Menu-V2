@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { OrderProvider } from "@/contexts/OrderContext";
 import { CustomerProvider } from "@/contexts/CustomerContext";
 import OrderSidebar from "@/components/order-sidebar";
+import CustomerGate from "@/components/customer-gate";
 import Welcome from "@/pages/welcome";
 import MenuLanding from "@/pages/menu-landing";
 import CategorySelection from "@/pages/category-selection";
@@ -16,6 +17,7 @@ import CustomerList from "@/pages/customer-list";
 import NotFound from "@/pages/not-found";
 import MocktailsCocktails from "@/pages/mocktails-cocktails";
 import PartyMenu from "@/pages/party-menu";
+import ProfilePage from "@/pages/profile";
 
 function Router() {
   return (
@@ -26,6 +28,7 @@ function Router() {
       <Route path="/menu/:category" component={CategorySelection} />
       <Route path="/menu/:category/:subcategory" component={SubcategoryProducts} />
       <Route path="/partymenu" component={PartyMenu} />
+      <Route path="/profile" component={ProfilePage} />
       <Route path="/customers" component={CustomerList} />
       <Route component={NotFound} />
     </Switch>
@@ -43,6 +46,7 @@ function App() {
               <Toaster />
               <Router />
               <OrderSidebar />
+              <CustomerGate />
             </TooltipProvider>
           </OrderProvider>
           </CustomerProvider>

@@ -251,12 +251,18 @@ export default function PartyMenu() {
           <HeaderActions color="var(--bb-gold)" size="sm" />
         </div>
 
-        <img
-          src="/bungle-logo.svg"
-          alt="Bung-le"
-          className="w-28 h-28 object-contain mb-2"
-          data-testid="img-party-menu-logo"
-        />
+        <button
+          onClick={() => setLocation("/")}
+          aria-label="Go to home"
+          data-testid="button-logo-home"
+        >
+          <img
+            src="/bungle-logo.svg"
+            alt="Bung-le"
+            className="w-28 h-28 object-contain mb-2"
+            data-testid="img-party-menu-logo"
+          />
+        </button>
 
         <p className="text-[10px] uppercase tracking-[0.3em] font-light mb-0.5" style={{ color: "var(--bb-gold)" }}>
           Join Us For Special Events

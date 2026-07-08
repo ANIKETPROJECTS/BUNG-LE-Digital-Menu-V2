@@ -52,12 +52,19 @@ export default function MocktailsCocktails() {
             </div>
 
             <div className="flex-1 flex justify-center items-center overflow-visible">
-              <img
-                src="/bungle-logo.svg"
-                alt="Bung-le"
-                style={{ height: "68px", width: "68px", objectFit: "contain", display: "block", transform: "scale(1.45)", transformOrigin: "center", marginTop: "8px" }}
-                data-testid="img-logo"
-              />
+              <button
+                onClick={() => setLocation("/")}
+                className="hover:bg-transparent"
+                aria-label="Go to home"
+                data-testid="button-logo-home"
+              >
+                <img
+                  src="/bungle-logo.svg"
+                  alt="Bung-le"
+                  style={{ height: "68px", width: "68px", objectFit: "contain", display: "block", transform: "scale(1.45)", transformOrigin: "center", marginTop: "8px" }}
+                  data-testid="img-logo"
+                />
+              </button>
             </div>
 
             <div className="flex justify-end items-center gap-1 flex-shrink-0">
