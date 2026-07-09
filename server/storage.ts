@@ -61,6 +61,8 @@ export interface IStorage {
   getOrders(): Promise<Order[]>;
   getOrdersByPhone(phone: string): Promise<Order[]>;
   deleteCompletedOrdersByPhone(phone: string): Promise<number>;
+
+  getPosSettings(): Promise<{ taxRate: number; serviceCharge: number; gstEnabled: boolean; gstNumber: string }>;
 }
 
 export class MongoStorage implements IStorage {
@@ -90,6 +92,8 @@ export class MongoStorage implements IStorage {
   private offerTileImagesCollection: Collection<OfferTileImages>;
   private ordersDb: Db;
   private ordersCollection: Collection<Order>;
+  private posDb: Db;
+  private posSettingsCollection: Collection<{ key: string; value: string }>;
   private restaurantId: ObjectId;
 
   private readonly categories = [
@@ -144,6 +148,8 @@ export class MongoStorage implements IStorage {
     this.offerTileImagesCollection = this.menuPageDb.collection<OfferTileImages>("offertileimages");
     this.ordersDb = this.client.db("Orders");
     this.ordersCollection = this.ordersDb.collection<Order>("orders");
+    this.posDb = this.client.db("POS");
+    this.posSettingsCollection = this.posDb.collection("settings");
     this.restaurantId = new ObjectId("6874cff2a880250859286de6");
   }
 
@@ -783,6 +789,18 @@ export class MongoStorage implements IStorage {
 
   async fixVegNonVegClassification(): Promise<{ updated: number; details: string[] }> {
     return { updated: 0, details: [] };
+  }
+
+  async getPosSettings(): Promise<{ taxRate: number; serviceCharge: number; gstEnabled: boolean; gstNumber: string }> {
+    const docs = await this.posSettingsCollection.find({}).toArray();
+    const map: Record<string, string> = {};
+    for (const doc of docs) map[doc.key] = doc.value;
+    return {
+      taxRate: parseFloat(map["tax_rate"] ?? "0"),
+      serviceCharge: parseFloat(map["service_charge"] ?? "0"),
+      gstEnabled: (map["gst_enabled"] ?? "false") === "true",
+      gstNumber: map["gst_number"] ?? "",
+    };
   }
 
   private sortMenuItems(items: MenuItem[]): MenuItem[] {

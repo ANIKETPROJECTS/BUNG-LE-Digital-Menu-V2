@@ -27,6 +27,17 @@ export default function OrderSidebar() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [ongoingOrder, setOngoingOrder] = useState<{ items: { name: string; quantity: number; price: string | number }[]; total: number; note?: string; placedAt: Date } | null>(null);
 
+  // Fetch POS settings (tax rate, service charge)
+  const { data: posSettings } = useQuery<{ taxRate: number; serviceCharge: number; gstEnabled: boolean; gstNumber: string }>({
+    queryKey: ["/api/pos-settings"],
+    queryFn: async () => {
+      const res = await fetch("/api/pos-settings");
+      if (!res.ok) return { taxRate: 0, serviceCharge: 0, gstEnabled: false, gstNumber: "" };
+      return res.json();
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
   // Fetch past orders for this customer
   const { data: pastOrders = [] } = useQuery<Order[]>({
     queryKey: ["/api/orders/by-phone", customer?.phone],
@@ -43,7 +54,15 @@ export default function OrderSidebar() {
     gcTime: 0,
   });
 
-  const total = orderItems.reduce((sum, l) => sum + parsePrice(l.item.price) * l.quantity, 0);
+  const subtotal = orderItems.reduce((sum, l) => sum + parsePrice(l.item.price) * l.quantity, 0);
+  const taxRate = posSettings?.taxRate ?? 0;
+  const serviceChargeRate = posSettings?.serviceCharge ?? 0;
+  const gstEnabled = posSettings?.gstEnabled ?? false;
+  const taxAmount = gstEnabled ? Math.round(subtotal * taxRate / 100) : 0;
+  const cgst = gstEnabled ? Math.round(taxAmount / 2) : 0;
+  const sgst = gstEnabled ? taxAmount - cgst : 0;
+  const serviceChargeAmount = serviceChargeRate > 0 ? Math.round(subtotal * serviceChargeRate / 100) : 0;
+  const total = subtotal + taxAmount + serviceChargeAmount;
 
   async function handlePlaceOrder() {
     if (orderItems.length === 0) return;
@@ -515,16 +534,45 @@ export default function OrderSidebar() {
             {/* Footer */}
             {!placed && orderItems.length > 0 && (
               <div
-                className="px-5 py-4 space-y-3"
+                className="px-5 py-4 space-y-2"
                 style={{ borderTop: "1px solid var(--bb-border)" }}
               >
+                {/* Subtotal */}
                 <div className="flex justify-between items-center">
-                  <span
-                    className="text-sm font-medium"
-                    style={{ color: "var(--bb-text-dim)" }}
-                  >
-                    Total
-                  </span>
+                  <span className="text-xs" style={{ color: "var(--bb-text-dim)" }}>Subtotal</span>
+                  <span className="text-xs font-medium" style={{ color: "var(--bb-text)" }}>₹{subtotal.toFixed(0)}</span>
+                </div>
+                {/* GST breakdown */}
+                {gstEnabled && taxAmount > 0 && (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs" style={{ color: "var(--bb-text-dim)" }}>
+                        CGST ({(taxRate / 2).toFixed(1)}%)
+                      </span>
+                      <span className="text-xs" style={{ color: "var(--bb-text-dim)" }}>₹{cgst}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs" style={{ color: "var(--bb-text-dim)" }}>
+                        SGST ({(taxRate / 2).toFixed(1)}%)
+                      </span>
+                      <span className="text-xs" style={{ color: "var(--bb-text-dim)" }}>₹{sgst}</span>
+                    </div>
+                  </>
+                )}
+                {/* Service Charge */}
+                {serviceChargeAmount > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs" style={{ color: "var(--bb-text-dim)" }}>
+                      Service Charge ({serviceChargeRate}%)
+                    </span>
+                    <span className="text-xs" style={{ color: "var(--bb-text-dim)" }}>₹{serviceChargeAmount}</span>
+                  </div>
+                )}
+                {/* Divider */}
+                <div style={{ borderTop: "1px dashed var(--bb-border)", marginTop: 4 }} />
+                {/* Grand Total */}
+                <div className="flex justify-between items-center pt-0.5">
+                  <span className="text-sm font-bold" style={{ color: "var(--bb-text)" }}>Total</span>
                   <span
                     className="text-xl font-bold"
                     style={{ color: "var(--bb-gold)", fontFamily: "'DM Sans', sans-serif" }}

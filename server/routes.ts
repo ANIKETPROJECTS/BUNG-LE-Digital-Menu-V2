@@ -454,6 +454,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // POS settings (tax rate, service charge)
+  app.get("/api/pos-settings", async (req, res) => {
+    try {
+      const settings = await storage.getPosSettings();
+      res.json(settings);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch POS settings" });
+    }
+  });
+
   // Delete a customer's completed/cancelled order history (ongoing orders are preserved)
   app.delete("/api/orders/by-phone/:phone", async (req, res) => {
     try {
