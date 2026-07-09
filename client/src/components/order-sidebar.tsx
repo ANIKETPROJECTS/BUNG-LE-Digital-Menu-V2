@@ -30,12 +30,8 @@ export default function OrderSidebar() {
   // Fetch POS settings (tax rate, service charge)
   const { data: posSettings } = useQuery<{ taxRate: number; serviceCharge: number; gstEnabled: boolean; gstNumber: string }>({
     queryKey: ["/api/pos-settings"],
-    queryFn: async () => {
-      const res = await fetch("/api/pos-settings");
-      if (!res.ok) return { taxRate: 0, serviceCharge: 0, gstEnabled: false, gstNumber: "" };
-      return res.json();
-    },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 
   // Fetch past orders for this customer

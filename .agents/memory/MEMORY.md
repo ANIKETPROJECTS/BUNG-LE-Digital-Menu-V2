@@ -1,0 +1,1 @@
+- [Backend hot-reload behavior](backend-hot-reload.md) — tsx server needs manual restart; Vite HMR only covers frontend changes.
