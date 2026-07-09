@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, User, ShoppingBag, DollarSign, TrendingUp, Calendar, Heart, ChevronDown, History } from "lucide-react";
+import { ArrowLeft, User, ShoppingBag, DollarSign, TrendingUp, Calendar, Heart, ChevronDown, History, X } from "lucide-react";
 import { useCustomer } from "@/contexts/CustomerContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useFavorites } from "@/hooks/use-favorites";
 import type { Order } from "@shared/schema";
 
 function parsePrice(price: string | number): number {
@@ -31,20 +32,7 @@ export default function ProfilePage() {
     refetchOnMount: "always",
   });
 
-  const favoritesQueryKey = ["/api/customers/by-phone", customer?.phone];
-  const { data: customerDoc } = useQuery<any>({
-    queryKey: favoritesQueryKey,
-    queryFn: async () => {
-      if (!customer?.phone) return null;
-      const res = await fetch(`/api/customers/by-phone/${customer.phone}`);
-      if (!res.ok) return null;
-      return res.json();
-    },
-    enabled: !!customer?.phone,
-    staleTime: 0,
-  });
-
-  const favorites = customerDoc?.favorites ?? [];
+  const { favorites, toggleFavorite } = useFavorites();
 
   const totalOrders = orders.length;
   const totalSpent = orders.reduce((sum, o) => sum + (o.total || 0), 0);
@@ -175,19 +163,33 @@ export default function ProfilePage() {
                 <p className="text-xs" style={{ color: "var(--bb-text-dim)" }}>No favorites yet — tap the heart on any dish to save it here.</p>
               ) : (
                 favorites.map((f: any) => (
-                  <div key={f.menuItemId} className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span
-                        className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
-                        style={{ background: "#E6394622", color: "#E63946" }}
-                      >
-                        1
+                  <div
+                    key={f.menuItemId}
+                    className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors"
+                    style={{ background: isDark ? "#1a1a1a" : "#fdf8f0", border: "1px solid var(--bb-border)" }}
+                  >
+                    {/* Clickable area → navigate to item's category page */}
+                    <button
+                      className="flex items-center gap-2 min-w-0 flex-1 text-left"
+                      onClick={() => setLocation(`/menu/${f.category}`)}
+                      data-testid={`button-favorite-goto-${f.menuItemId}`}
+                    >
+                      <Heart size={13} style={{ color: "#E63946", flexShrink: 0 }} fill="#E63946" />
+                      <span className="text-sm truncate flex-1" style={{ color: "var(--bb-text)" }}>{f.name}</span>
+                      <span className="text-sm font-bold flex-shrink-0" style={{ color: "var(--bb-gold)" }}>
+                        ₹{parsePrice(f.price).toFixed(0)}
                       </span>
-                      <span className="text-sm truncate" style={{ color: "var(--bb-text)" }}>{f.name}</span>
-                    </div>
-                    <span className="text-sm font-bold flex-shrink-0" style={{ color: "var(--bb-gold)" }}>
-                      ₹{parsePrice(f.price).toFixed(0)}
-                    </span>
+                    </button>
+                    {/* Remove button */}
+                    <button
+                      onClick={() => toggleFavorite({ menuItemId: f.menuItemId, name: f.name, price: f.price, image: f.image ?? "", category: f.category, isVeg: f.isVeg })}
+                      className="flex-shrink-0 p-1 rounded-full transition-colors"
+                      style={{ background: "#E6394622", color: "#E63946" }}
+                      title="Remove from favorites"
+                      data-testid={`button-remove-favorite-${f.menuItemId}`}
+                    >
+                      <X size={12} />
+                    </button>
                   </div>
                 ))
               )}
