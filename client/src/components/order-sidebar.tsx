@@ -518,30 +518,6 @@ export default function OrderSidebar() {
                 className="px-5 py-4 space-y-3"
                 style={{ borderTop: "1px solid var(--bb-border)" }}
               >
-                {/* Note / Special Instructions */}
-                <div className="space-y-1">
-                  <label
-                    className="text-xs font-semibold uppercase tracking-wider"
-                    style={{ color: "var(--bb-text-dim)" }}
-                  >
-                    Add a Note
-                  </label>
-                  <textarea
-                    value={note}
-                    onChange={e => setNote(e.target.value)}
-                    placeholder="Special instructions, allergies, preferences…"
-                    rows={2}
-                    maxLength={300}
-                    className="w-full rounded-lg px-3 py-2 text-sm resize-none outline-none transition-colors"
-                    style={{
-                      background: isDark ? "#1a1a1a" : "#fff",
-                      border: "1px solid var(--bb-border)",
-                      color: "var(--bb-text)",
-                      fontFamily: "'DM Sans', sans-serif",
-                    }}
-                  />
-                </div>
-
                 <div className="flex justify-between items-center">
                   <span
                     className="text-sm font-medium"

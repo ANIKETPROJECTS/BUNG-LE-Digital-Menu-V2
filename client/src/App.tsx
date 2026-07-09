@@ -18,6 +18,7 @@ import NotFound from "@/pages/not-found";
 import MocktailsCocktails from "@/pages/mocktails-cocktails";
 import PartyMenu from "@/pages/party-menu";
 import ProfilePage from "@/pages/profile";
+import OrderHistoryPage from "@/pages/order-history";
 
 function Router() {
   return (
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/menu/:category/:subcategory" component={SubcategoryProducts} />
       <Route path="/partymenu" component={PartyMenu} />
       <Route path="/profile" component={ProfilePage} />
+      <Route path="/order-history" component={OrderHistoryPage} />
       <Route path="/customers" component={CustomerList} />
       <Route component={NotFound} />
     </Switch>

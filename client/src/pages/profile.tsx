@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, User, ShoppingBag, DollarSign, TrendingUp, Calendar, Heart, Clock, Trash2, ChevronDown } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, User, ShoppingBag, DollarSign, TrendingUp, Calendar, Heart, ChevronDown, History } from "lucide-react";
 import { useCustomer } from "@/contexts/CustomerContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import type { Order } from "@shared/schema";
@@ -16,8 +16,6 @@ export default function ProfilePage() {
   const [, setLocation] = useLocation();
   const { customer } = useCustomer();
   const { isDark } = useTheme();
-  const queryClient = useQueryClient();
-  const [deleting, setDeleting] = useState(false);
   const [favoritesOpen, setFavoritesOpen] = useState(false);
 
   const { data: orders = [] } = useQuery<Order[]>({
@@ -52,19 +50,6 @@ export default function ProfilePage() {
   const totalSpent = orders.reduce((sum, o) => sum + (o.total || 0), 0);
   const averageOrder = totalOrders > 0 ? totalSpent / totalOrders : 0;
   const lastOrder = orders[0];
-
-  async function handleDeleteAll() {
-    if (!customer?.phone) return;
-    setDeleting(true);
-    try {
-      await fetch(`/api/orders/by-phone/${customer.phone}`, { method: "DELETE" });
-      queryClient.invalidateQueries({ queryKey: ["/api/orders/by-phone", customer.phone] });
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setDeleting(false);
-    }
-  }
 
   const cardBg = isDark ? "#141414" : "#fff";
   const pageBg = isDark ? "#0f0f0f" : "#FDFAF4";
@@ -210,55 +195,32 @@ export default function ProfilePage() {
           )}
         </div>
 
-        {/* Order history */}
-        <div className="space-y-2 pb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Clock size={15} style={{ color: "var(--bb-gold)" }} />
-              <span className="text-sm font-semibold" style={{ color: "var(--bb-text)" }}>Order History</span>
-            </div>
-            <button
-              onClick={handleDeleteAll}
-              disabled={deleting || orders.filter(o => o.status === "completed" || o.status === "cancelled").length === 0}
-              className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-lg disabled:opacity-40"
-              style={{ background: "#E63946", color: "#fff" }}
-              data-testid="button-delete-order-history"
-            >
-              <Trash2 size={12} /> Delete All
-            </button>
-          </div>
-          {orders.length === 0 ? (
-            <p className="text-xs" style={{ color: "var(--bb-text-dim)" }}>No orders yet.</p>
-          ) : (
-            orders.map((order) => (
+        {/* Previous Orders button */}
+        <div className="pb-6">
+          <button
+            onClick={() => setLocation("/order-history")}
+            className="w-full flex items-center justify-between gap-3 px-4 py-3.5 rounded-xl transition-all"
+            style={{ background: cardBg, border: "1px solid var(--bb-border)" }}
+            data-testid="button-view-order-history"
+          >
+            <div className="flex items-center gap-3">
               <div
-                key={order._id?.toString()}
-                className="rounded-lg p-2.5 space-y-1"
-                style={{ background: cardBg, border: "1px solid var(--bb-border)" }}
+                className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ background: "var(--bb-gold)" }}
               >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs" style={{ color: "var(--bb-text-dim)" }}>
-                    {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <span
-                      className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full"
-                      style={{
-                        background: order.status === "completed" ? "#2FA84F22" : "#E49B1D22",
-                        color: order.status === "completed" ? "#2FA84F" : "#E49B1D",
-                      }}
-                    >
-                      {order.status}
-                    </span>
-                    <span className="text-xs font-bold" style={{ color: "var(--bb-gold)" }}>₹{order.total}</span>
-                  </div>
-                </div>
-                <p className="text-xs" style={{ color: "var(--bb-text)", wordBreak: "break-word" }}>
-                  {order.items.map(i => `${i.name} ×${i.quantity}`).join(", ")}
+                <History size={17} color="#fff" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-bold" style={{ color: "var(--bb-text)", fontFamily: "'DM Sans', sans-serif" }}>
+                  Previous Orders
+                </p>
+                <p className="text-xs" style={{ color: "var(--bb-text-dim)" }}>
+                  {orders.length > 0 ? `${orders.length} order${orders.length !== 1 ? "s" : ""} · search, filter & sort` : "View your full order history"}
                 </p>
               </div>
-            ))
-          )}
+            </div>
+            <ChevronDown size={16} style={{ color: "var(--bb-text-dim)", transform: "rotate(-90deg)" }} />
+          </button>
         </div>
       </div>
     </div>
