@@ -242,53 +242,6 @@ export default function OrderSidebar() {
                   )}
                 </button>
 
-                {/* Previous (completed) orders — collapsible */}
-                <AnimatePresence>
-                  {profileOpen && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      style={{ overflow: "hidden" }}
-                    >
-                      <div className="px-5 pb-3 space-y-2">
-                        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--bb-text-dim)" }}>
-                          Previous Orders
-                        </p>
-                        {pastOrders.filter(o => o.status === "completed").length === 0 ? (
-                          <p className="text-xs" style={{ color: "var(--bb-text-dim)" }}>No completed orders yet.</p>
-                        ) : (
-                          pastOrders.filter(o => o.status === "completed").slice(0, 5).map(order => (
-                            <div
-                              key={order._id?.toString()}
-                              className="rounded-lg p-2.5 space-y-1"
-                              style={{ background: isDark ? "#1a1a1a" : "#fff", border: "1px solid var(--bb-border)" }}
-                            >
-                              <div className="flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-1.5">
-                                  <Clock size={11} style={{ color: "var(--bb-text-dim)", flexShrink: 0 }} />
-                                  <span className="text-xs" style={{ color: "var(--bb-text-dim)" }}>
-                                    {new Date(order.createdAt).toLocaleDateString("en-IN", {
-                                      day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
-                                    })}
-                                  </span>
-                                </div>
-                                <span className="text-xs font-bold" style={{ color: "var(--bb-gold)" }}>₹{order.total}</span>
-                              </div>
-                              <p className="text-xs" style={{ color: "var(--bb-text)", wordBreak: "break-word" }}>
-                                {order.items.map(i => i.name).join(", ")}
-                              </p>
-                              {order.note && (
-                                <p className="text-xs italic" style={{ color: "var(--bb-text-dim)" }}>Note: {order.note}</p>
-                              )}
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
             )}
 
