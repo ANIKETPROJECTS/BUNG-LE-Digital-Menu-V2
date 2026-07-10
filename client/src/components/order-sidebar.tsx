@@ -336,14 +336,25 @@ export default function OrderSidebar() {
                           <span className="text-xs font-bold" style={{ color: "var(--bb-gold)" }}>₹{order.total}</span>
                         </div>
                       </div>
-                      {/* Items — one per line, no truncation */}
-                      <div className="space-y-1 pt-1" style={{ borderTop: "1px solid var(--bb-border)" }}>
-                        {order.items.map((item, idx) => (
-                          <div key={idx} className="flex items-start justify-between gap-3 text-xs">
-                            <span style={{ color: "var(--bb-text)", wordBreak: "break-word", flex: 1 }}>{item.name}</span>
-                            <span className="flex-shrink-0 font-semibold" style={{ color: "var(--bb-gold)" }}>×{item.quantity}</span>
-                          </div>
-                        ))}
+                      {/* Items table */}
+                      <div className="pt-1" style={{ borderTop: "1px solid var(--bb-border)" }}>
+                        {/* Header */}
+                        <div className="grid text-[10px] font-semibold uppercase tracking-wide mb-1 pb-1" style={{ gridTemplateColumns: "1fr auto auto", gap: "0 8px", borderBottom: "1px dashed var(--bb-border)", color: "var(--bb-text-dim)" }}>
+                          <span>Item</span>
+                          <span className="text-center">Qty</span>
+                          <span className="text-right">Price</span>
+                        </div>
+                        {/* Rows */}
+                        {order.items.map((item, idx) => {
+                          const unit = parsePrice(item.price);
+                          return (
+                            <div key={idx} className="grid text-xs py-0.5" style={{ gridTemplateColumns: "1fr auto auto", gap: "0 8px" }}>
+                              <span style={{ color: "var(--bb-text)", wordBreak: "break-word", lineHeight: 1.3 }}>{item.name}</span>
+                              <span className="text-center font-medium flex-shrink-0" style={{ color: "var(--bb-text-dim)" }}>×{item.quantity}</span>
+                              <span className="text-right font-semibold flex-shrink-0" style={{ color: "var(--bb-gold)" }}>₹{(unit * item.quantity).toFixed(0)}</span>
+                            </div>
+                          );
+                        })}
                       </div>
                       {/* Table */}
                       <p className="text-xs" style={{ color: "var(--bb-text-dim)" }}>
